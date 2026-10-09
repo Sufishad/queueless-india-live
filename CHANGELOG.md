@@ -29,6 +29,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Branch Card widget displaying Now Serving #, Waiting, and Est. Wait in JetBrains Mono with live pulsing indicators.
   - Join Queue bottom sheet with service selector, customer name input, senior citizen priority toggle, and idempotency protection.
   - **TokenTicketWidget**: Hero perforated digital ticket with custom notch clipper, dashed perforation line, glowing JetBrains Mono token number (#), live wait telemetry, QR code stub, and 4-step progress tracker (`WAITING` -> `CALLED` -> `IN SERVICE` -> `COMPLETED`).
+- **Calling Alert Service & Audio Engine (`apps/mobile/lib/core/services/calling_alert_service.dart`)**:
+  - Android notification channel `queueless_token_alarm_high_priority` with `AudioAttributesUsage.alarm` and `fullScreenIntent: true` to ring over silent/DND where OS permits.
+  - Active token foreground service with continuous notification (`QueueLess live — you are #14, 3 ahead`) preventing background OS task killing.
+  - Sequential bilingual TTS synthesizer: speaks Hindi first (`hi-IN`: "टोकन नंबर {n}, काउंटर {c} पर आएं"), then English (`en-IN`: "Token number {n}, please proceed to counter {c}"), strictly respecting branch voice flags.
+  - OEM Autostart Guidance Dialog (`autostart_guidance_dialog.dart`) for MIUI/HyperOS, ColorOS, and FuntouchOS.
+- **Merchant Console (`apps/mobile/lib/features/merchant/`)**:
+  - Calling board featuring current called token in JetBrains Mono, active counter chips, next-up queue, waiting count, and completed count.
+  - Optimistic actions with REST mapping and error rollbacks: `Call Next` (primary), `Recall`, `Complete`, `Skip / No-Show`, and `Pause / Resume Queue`.
+  - 1-Tap Walk-In modal (`WalkInDialog`) with senior priority toggle and service selector.
+  - **Offline Action Queue (`offline_action_queue_service.dart`)**: Hive persistent storage with FIFO sequential replay, mutex concurrency locking, idempotency key transmission, and poison-pill ejection.
+- **TV Calling Board Mode (`tv_calling_board_screen.dart`)**:
+  - Fullscreen landscape mode with `wakelock_plus` screen wake lock for Android TV dongles and merchant wall monitors.
+  - Realtime `LIVE` / `RECONNECTING` status pills with automatic Socket.IO reconnection.
+  - Giant JetBrains Mono token display ($\ge 96\text{sp}$) legible from 5+ meters away.
+- **QR Standee Generator (`qr_standee_pdf_service.dart`)**:
+  - A4 Printable PDF generation using `pdf` & `printing` with brand header, vector QR deep-link (`https://queueless.in/b/{id}`), 3-step customer guide, and tagline *"Line mein nahi, time par"*.
+- **Unit Tests (`apps/mobile/test/`)**:
+  - `offline_action_queue_test.dart`: Verifies FIFO replay, idempotency deduplication, and concurrency safety.
+  - `calling_alert_tts_test.dart`: Verifies sequential bilingual TTS ordering (`hi-IN` then `en-IN`) and voice flag gating.
 
 ## [0.2.0] - Milestone 1 (M1: Backend Core & Realtime)
 

@@ -127,3 +127,36 @@ All foundational architectural decisions are logged here with context, alternati
 - **Trade-offs:**
   - Protects customer experience and prevents platform trust erosion.
   - Merchant must reopen the console to resume the queue when connectivity is restored.
+
+---
+
+## ADR-009: Offline Merchant Mutation Queue with Idempotent Replay via Hive
+
+- **Status:** Accepted (M2)
+- **Context:**
+  Merchants frequently operate in Indian markets with intermittent 2G/3G connectivity or momentary Wi-Fi drops. Actions like `callNext`, `complete`, or `walkIn` must not fail or hang the merchant counter workflow.
+- **Decision:**
+  - When network mutation fails or is offline, actions are queued locally in a Hive box `offline_merchant_actions` with `{endpoint, method, payload, idempotencyKey, createdAt}`.
+  - On network restoration, actions are replayed in strict FIFO sequence.
+  - Each action carries an immutable `Idempotency-Key` UUID. Server rejects or absorbs duplicates (409) without double counting.
+  - Concurrency lock guarantees no concurrent double-replays.
+- **Trade-offs:**
+  - Zero disruption to merchant calling flow during link flakiness.
+  - Requires optimistic UI state updates and automatic poison-pill ejection.
+
+---
+
+## ADR-010: Bilingual Sequential Voice Announcements & High-Priority AudioAttributes USAGE_ALARM
+
+- **Status:** Accepted (M2)
+- **Context:**
+  Citizens in noisy Indian public markets or waiting areas often miss visual banners or silent notifications.
+- **Decision:**
+  - Android notification channel `queueless_token_alarm_high_priority` configured with `audioAttributesUsage: AudioAttributesUsage.alarm` and `fullScreenIntent: true` to bypass silent mode and DND where permitted.
+  - Sequential bilingual TTS synthesized directly on client via `FlutterTts`:
+    1. Hindi (`hi-IN`): *"टोकन नंबर {n}, काउंटर {c} पर आएं"*
+    2. English (`en-IN`): *"Token number {n}, please proceed to counter {c}"*
+  - Responds to merchant branch `queue_settings` voice flags (`voice_hi`, `voice_en`).
+- **Trade-offs:**
+  - Native offline TTS requires zero telephony or audio streaming bandwidth.
+  - Aggressive Android skins (MIUI, ColorOS) require user autostart guidance dialog.

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/services/autostart_guidance_dialog.dart';
+import '../../merchant/screens/merchant_console_screen.dart';
 import '../models/branch_model.dart';
 import '../models/queue_token_model.dart';
 import '../providers/customer_queue_notifier.dart';
@@ -24,6 +26,14 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
 
   final List<String> _cities = ['All', 'Bengaluru', 'Mumbai', 'Delhi', 'Pune'];
   final List<String> _categories = ['All', 'CLINIC', 'SALON', 'BANK', 'GOVT/RTO'];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AutostartGuidanceDialog.showIfRequired(context);
+    });
+  }
 
   @override
   void dispose() {
@@ -121,6 +131,20 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.storefront_rounded, color: AppColors.primary),
+            tooltip: 'Merchant Console',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const MerchantConsoleScreen(
+                    branchId: 'b-blr-01',
+                    branchName: 'Koramangala Express Branch',
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_none, color: AppColors.textPrimary),
             onPressed: () {},

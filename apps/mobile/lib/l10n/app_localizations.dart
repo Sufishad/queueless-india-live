@@ -51,6 +51,25 @@ abstract class AppLocalizations {
   String get live;
   String get offline;
   String get close;
+  String get merchantConsole;
+  String get callNext;
+  String get recall;
+  String get completeAction;
+  String get skipAction;
+  String get pauseQueue;
+  String get resumeQueue;
+  String get walkInButton;
+  String get tvBoard;
+  String get qrStandee;
+  String get nextUp;
+  String get waitingCount;
+  String get completedToday;
+  String get counter;
+  String get reconnecting;
+  String get autostartGuidanceTitle;
+  String get autostartGuidanceDesc;
+  String get enableNow;
+  String get dismiss;
 }
 
 class _AppLocalizationsDelegate
@@ -144,6 +163,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get offline => 'OFFLINE';
   @override
   String get close => 'Close';
+  @override
+  String get merchantConsole => 'Merchant Console';
+  @override
+  String get callNext => 'Call Next';
+  @override
+  String get recall => 'Recall';
+  @override
+  String get completeAction => 'Complete';
+  @override
+  String get skipAction => 'Skip / No-Show';
+  @override
+  String get pauseQueue => 'Pause Queue';
+  @override
+  String get resumeQueue => 'Resume Queue';
+  @override
+  String get walkInButton => 'Walk-in';
+  @override
+  String get tvBoard => 'TV Calling Board';
+  @override
+  String get qrStandee => 'Print QR Standee';
+  @override
+  String get nextUp => 'Next Up';
+  @override
+  String get waitingCount => 'Waiting';
+  @override
+  String get completedToday => 'Completed Today';
+  @override
+  String get counter => 'Counter';
+  @override
+  String get reconnecting => 'RECONNECTING';
+  @override
+  String get autostartGuidanceTitle => 'Background Alarm Setup';
+  @override
+  String get autostartGuidanceDesc =>
+      'To ensure token alerts ring over silent/DND when phone is locked, please allow Auto-start for QueueLess.';
+  @override
+  String get enableNow => 'Enable Now';
+  @override
+  String get dismiss => 'Dismiss';
 }
 
 class AppLocalizationsHi extends AppLocalizations {
@@ -212,6 +270,45 @@ class AppLocalizationsHi extends AppLocalizations {
   String get offline => 'ऑफ़लाइन';
   @override
   String get close => 'बंद करें';
+  @override
+  String get merchantConsole => 'व्यापारी कंसोल';
+  @override
+  String get callNext => 'अगला बुलाएं';
+  @override
+  String get recall => 'दोबारा बुलाएं';
+  @override
+  String get completeAction => 'पूर्ण करें';
+  @override
+  String get skipAction => 'छोड़ें / गैरहजिर';
+  @override
+  String get pauseQueue => 'कतार रोकें';
+  @override
+  String get resumeQueue => 'कतार शुरू करें';
+  @override
+  String get walkInButton => 'वॉक-इन';
+  @override
+  String get tvBoard => 'टीवी कॉलिंग बोर्ड';
+  @override
+  String get qrStandee => 'क्यूआर स्टैंडी प्रिंट करें';
+  @override
+  String get nextUp => 'अगला';
+  @override
+  String get waitingCount => 'प्रतीक्षारत';
+  @override
+  String get completedToday => 'आज पूर्ण';
+  @override
+  String get counter => 'काउंटर';
+  @override
+  String get reconnecting => 'पुनः कनेक्ट हो रहा है';
+  @override
+  String get autostartGuidanceTitle => 'बैकग्राउंड अलार्म अनुमति';
+  @override
+  String get autostartGuidanceDesc =>
+      'स्क्रीन लॉक होने पर भी टोकन अलार्म बजने के लिए कृपया कतारमुक्त भारत (QueueLess) को ऑटो-स्टार्ट की अनुमति दें।';
+  @override
+  String get enableNow => 'अभी अनुमति दें';
+  @override
+  String get dismiss => 'बाद में';
 }
 
 class AppLocalizationsMr extends AppLocalizations {
@@ -280,4 +377,43 @@ class AppLocalizationsMr extends AppLocalizations {
   String get offline => 'ऑफलाईन';
   @override
   String get close => 'बंद करा';
+  @override
+  String get merchantConsole => 'व्यापारी कन्सोल';
+  @override
+  String get callNext => 'पुढील बोलवा';
+  @override
+  String get recall => 'पुन्हा बोलवा';
+  @override
+  String get completeAction => 'पूर्ण करा';
+  @override
+  String get skipAction => 'वगळा / गैरहजर';
+  @override
+  String get pauseQueue => 'रांग थांबवा';
+  @override
+  String get resumeQueue => 'रांग सुरू करा';
+  @override
+  String get walkInButton => 'वॉक-इन';
+  @override
+  String get tvBoard => 'टीव्ही कॉलिंग बोर्ड';
+  @override
+  String get qrStandee => 'क्यूआर स्टँडी प्रिंट करा';
+  @override
+  String get nextUp => 'पुढील टोकन';
+  @override
+  String get waitingCount => 'प्रतीक्षेत';
+  @override
+  String get completedToday => 'आज पूर्ण';
+  @override
+  String get counter => 'काउंटर';
+  @override
+  String get reconnecting => 'पुन्हा जोडत आहे';
+  @override
+  String get autostartGuidanceTitle => 'पार्श्वभूमी अलार्म सेटिंग';
+  @override
+  String get autostartGuidanceDesc =>
+      'स्क्रीन लॉक असतानाही टोकन अलार्म वाजण्यासाठी QueueLess साठी ऑटो-स्टार्ट सुरू करा.';
+  @override
+  String get enableNow => 'आता सुरू करा';
+  @override
+  String get dismiss => 'नंतर';
 }
