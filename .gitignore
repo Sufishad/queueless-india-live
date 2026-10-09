@@ -1,0 +1,54 @@
+# Hermes Agent Profile Internals
+lsp/
+logs/
+runtime/
+cache/
+desktop/
+cron/
+pairing/
+sessions/
+backups/
+audio_cache/
+image_cache/
+skins/
+*.db
+*.db-*
+*.lock
+profile.yaml
+config.yaml
+.skills_prompt_snapshot.json
+assets/
+provider_models_cache.json
+SOUL.md
+skills/
+plugins/
+memories/
+plans/
+attachments/
+workspace/
+
+# Dependencies & Node
+node_modules/
+dist/
+build/
+.npm/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+*.iml
+.idea/
+
+# Operating System & Editors
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
