@@ -24,6 +24,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unit Tests**:
   - 14 tests across `auth.service.spec.ts` and `sanitize-logs.interceptor.spec.ts` verifying OTP rate limits, reviewer auth, and recursive phone/token masking.
 
+- **Queue Engine Module & Atomic Sequence**:
+  - Redis Lua script (`backend/scripts/generate_token.lua`) for atomic, duplicate-free daily token increment per branch room.
+  - `POST /api/v1/branches/:id/token` with Idempotency-Key caching in Redis, active token conflict validation (409), and Postgres persistence.
+  - Wait time estimation using Exponential Moving Average (EMA) ($\alpha = 2 / 21$) based on completed service durations and active counters.
+  - Merchant state machine: `callNext`, `recall`, `complete`, `skip` (auto-requeue once to end of queue, second skip cancels), `walkIn` (keypad phone / senior tokens), `pauseQueue`, `resumeQueue`.
+- **Realtime Gateway & Push Notifications**:
+  - Socket.IO gateway (`backend/src/modules/realtime/`) broadcasting to rooms `branch:{id}` for events `queue:update`, `token:called`, `token:status`, `queue:paused`, `queue:resumed`.
+  - Notifications service (`backend/src/modules/notifications/`) handling mock FCM high-priority alarm-channel notifications with bilingual Hindi/English alert templates.
+- **Unit & Concurrency Tests**:
+  - `queue.concurrency.spec.ts`: 50 simultaneous join requests verified for strictly unique sequential numbers ($1 \dots 50$) and 0 unique database constraint violations.
+  - `queue.service.spec.ts`: Full state machine tests for skip/no-show (re-queue $\to$ cancel), call-next, recall, complete, and EMA calculations.
+
 ## [0.1.0] - Milestone 0 (M0: Foundation, Architecture & Contracts)
 
 ### Added
