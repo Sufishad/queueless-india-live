@@ -3,12 +3,22 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 
 enum SocketConnectionState { connecting, connected, reconnecting, disconnected }
 
+enum SocketEventType { queueUpdate, tokenCalled, tokenStatus, queuePaused, queueResumed }
+
+class SocketEvent {
+  final SocketEventType type;
+  final Map<String, dynamic> data;
+
+  const SocketEvent({required this.type, required this.data});
+}
+
 class SocketService {
   io.Socket? _socket;
   final String serverUrl;
 
   final _connectionStateController =
       StreamController<SocketConnectionState>.broadcast();
+  final _eventsController = StreamController<SocketEvent>.broadcast();
   final _queueUpdateController =
       StreamController<Map<String, dynamic>>.broadcast();
   final _tokenCalledController =
@@ -20,6 +30,8 @@ class SocketService {
   final _queueResumedController =
       StreamController<Map<String, dynamic>>.broadcast();
 
+  bool get isConnected => _socket?.connected ?? false;
+  Stream<SocketEvent> get events => _eventsController.stream;
   Stream<SocketConnectionState> get connectionStateStream =>
       _connectionStateController.stream;
   Stream<Map<String, dynamic>> get queueUpdateStream =>
@@ -67,30 +79,35 @@ class SocketService {
     _socket!.on('queue:update', (data) {
       if (data is Map<String, dynamic>) {
         _queueUpdateController.add(data);
+        _eventsController.add(SocketEvent(type: SocketEventType.queueUpdate, data: data));
       }
     });
 
     _socket!.on('token:called', (data) {
       if (data is Map<String, dynamic>) {
         _tokenCalledController.add(data);
+        _eventsController.add(SocketEvent(type: SocketEventType.tokenCalled, data: data));
       }
     });
 
     _socket!.on('token:status', (data) {
       if (data is Map<String, dynamic>) {
         _tokenStatusController.add(data);
+        _eventsController.add(SocketEvent(type: SocketEventType.tokenStatus, data: data));
       }
     });
 
     _socket!.on('queue:paused', (data) {
       if (data is Map<String, dynamic>) {
         _queuePausedController.add(data);
+        _eventsController.add(SocketEvent(type: SocketEventType.queuePaused, data: data));
       }
     });
 
     _socket!.on('queue:resumed', (data) {
       if (data is Map<String, dynamic>) {
         _queueResumedController.add(data);
+        _eventsController.add(SocketEvent(type: SocketEventType.queueResumed, data: data));
       }
     });
   }
@@ -98,6 +115,8 @@ class SocketService {
   void subscribeBranch(String branchId) {
     _socket?.emit('branch:subscribe', {'branchId': branchId});
   }
+
+  void subscribeToBranch(String branchId) => subscribeBranch(branchId);
 
   void unsubscribeBranch(String branchId) {
     _socket?.emit('branch:unsubscribe', {'branchId': branchId});

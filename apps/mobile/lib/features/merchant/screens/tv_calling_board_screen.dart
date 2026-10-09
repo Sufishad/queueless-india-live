@@ -86,7 +86,7 @@ class _TvCallingBoardScreenState extends ConsumerState<TvCallingBoardScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(merchantDashboardProvider(widget.branchId));
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final currentToken = state.currentToken;
 
     return Scaffold(

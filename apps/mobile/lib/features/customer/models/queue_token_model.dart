@@ -50,19 +50,31 @@ class QueueTokenModel {
   final int positionInQueue;
   final int estWaitMin;
   final DateTime createdAt;
+  final String? customerName;
+  final String? date;
+  final DateTime? calledAt;
+  final int? estimatedWaitSeconds;
 
-  const QueueTokenModel({
+  String? get counterAssigned => calledCounterLabel;
+  int get estimatedWaitMinutes => estWaitMin;
+
+  QueueTokenModel({
     required this.id,
     required this.number,
     required this.branchId,
-    required this.branchName,
-    required this.serviceName,
+    this.branchName = 'Clinic',
+    this.serviceName = 'Standard Service',
     this.status = CustomerTokenStatus.waiting,
     this.calledCounterLabel,
     this.positionInQueue = 1,
     this.estWaitMin = 0,
-    required this.createdAt,
-  });
+    DateTime? createdAt,
+    this.customerName,
+    this.date,
+    this.calledAt,
+    this.estimatedWaitSeconds,
+    String? counterAssigned,
+  }) : createdAt = createdAt ?? DateTime.now();
 
   factory QueueTokenModel.fromJson(Map<String, dynamic> json) {
     return QueueTokenModel(
@@ -86,8 +98,14 @@ class QueueTokenModel {
   QueueTokenModel copyWith({
     CustomerTokenStatus? status,
     String? calledCounterLabel,
+    String? counterAssigned,
     int? positionInQueue,
     int? estWaitMin,
+    int? estimatedWaitMinutes,
+    String? customerName,
+    String? date,
+    DateTime? calledAt,
+    int? estimatedWaitSeconds,
   }) {
     return QueueTokenModel(
       id: id,
@@ -96,10 +114,14 @@ class QueueTokenModel {
       branchName: branchName,
       serviceName: serviceName,
       status: status ?? this.status,
-      calledCounterLabel: calledCounterLabel ?? this.calledCounterLabel,
+      calledCounterLabel: counterAssigned ?? calledCounterLabel ?? this.calledCounterLabel,
       positionInQueue: positionInQueue ?? this.positionInQueue,
-      estWaitMin: estWaitMin ?? this.estWaitMin,
+      estWaitMin: estimatedWaitMinutes ?? estWaitMin ?? this.estWaitMin,
       createdAt: createdAt,
+      customerName: customerName ?? this.customerName,
+      date: date ?? this.date,
+      calledAt: calledAt ?? this.calledAt,
+      estimatedWaitSeconds: estimatedWaitSeconds ?? this.estimatedWaitSeconds,
     );
   }
 }

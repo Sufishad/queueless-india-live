@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/network/dio_client.dart';
@@ -82,7 +83,7 @@ class CustomerQueueNotifier extends StateNotifier<CustomerQueueState> {
 
   void _loadInitialBranches() {
     // Curated real-world launch branches matching Master Spec cities
-    final sampleBranches = [
+    const sampleBranches = [
       BranchModel(
         id: 'branch-bengaluru-apollo-1',
         name: 'Apollo Clinic & Diagnostics',
@@ -94,7 +95,7 @@ class CustomerQueueNotifier extends StateNotifier<CustomerQueueState> {
         waitingCount: 5,
         estWaitMin: 18,
         activeCounters: 2,
-        services: const [
+        services: [
           ServiceItem(id: 'srv-gen-opd', name: 'General OPD Consultation', avgDurationMin: 15, price: 300),
           ServiceItem(id: 'srv-pedia', name: 'Pediatrics Consultation', avgDurationMin: 20, price: 500),
         ],
@@ -110,7 +111,7 @@ class CustomerQueueNotifier extends StateNotifier<CustomerQueueState> {
         waitingCount: 3,
         estWaitMin: 25,
         activeCounters: 3,
-        services: const [
+        services: [
           ServiceItem(id: 'srv-haircut', name: 'Haircut & Beard Styling', avgDurationMin: 30, price: 450),
           ServiceItem(id: 'srv-facial', name: 'Detox Facial', avgDurationMin: 45, price: 1200),
         ],
@@ -126,7 +127,7 @@ class CustomerQueueNotifier extends StateNotifier<CustomerQueueState> {
         waitingCount: 9,
         estWaitMin: 35,
         activeCounters: 4,
-        services: const [
+        services: [
           ServiceItem(id: 'srv-kyc', name: 'KYC & Account Opening', avgDurationMin: 15, price: 0),
           ServiceItem(id: 'srv-cash', name: 'Forex & High-Value Cash', avgDurationMin: 10, price: 0),
         ],
@@ -142,7 +143,7 @@ class CustomerQueueNotifier extends StateNotifier<CustomerQueueState> {
         waitingCount: 14,
         estWaitMin: 40,
         activeCounters: 2,
-        services: const [
+        services: [
           ServiceItem(id: 'srv-dl-doc', name: 'Driving License Bio-Verification', avgDurationMin: 8, price: 0),
           ServiceItem(id: 'srv-rc-transfer', name: 'RC Transfer & Hypothecation', avgDurationMin: 12, price: 0),
         ],

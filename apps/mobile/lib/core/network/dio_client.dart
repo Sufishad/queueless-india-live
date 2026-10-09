@@ -8,9 +8,9 @@ class DioClient {
   final String baseUrl;
 
   DioClient({
-    required this.storageService,
+    SecureStorageService? storageService,
     this.baseUrl = 'http://10.0.2.2:3000/api/v1', // Android emulator default localhost
-  }) {
+  }) : storageService = storageService ?? SecureStorageService() {
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -27,7 +27,7 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           // Attach Authorization token if present
-          final token = await storageService.getAccessToken();
+          final token = await storageService!.getAccessToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -47,7 +47,7 @@ class DioClient {
               !error.requestOptions.path.contains('/auth/otp/')) {
             final refreshed = await _refreshToken();
             if (refreshed) {
-              final token = await storageService.getAccessToken();
+              final token = await storageService!.getAccessToken();
               error.requestOptions.headers['Authorization'] = 'Bearer $token';
               try {
                 final retryResponse = await dio.fetch(error.requestOptions);
@@ -56,7 +56,7 @@ class DioClient {
                 return handler.next(error);
               }
             } else {
-              await storageService.clearAuth();
+              await storageService!.clearAuth();
             }
           }
           return handler.next(error);

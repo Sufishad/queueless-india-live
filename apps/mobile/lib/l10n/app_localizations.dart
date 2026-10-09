@@ -1,74 +1,403 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_en.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_mr.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
 abstract class AppLocalizations {
-  AppLocalizations(this.locale);
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
-  final Locale locale;
+  final String localeName;
 
-  static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations) ??
-        AppLocalizationsEn();
+  static AppLocalizations? of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
   static const LocalizationsDelegate<AppLocalizations> delegate =
       _AppLocalizationsDelegate();
 
-  static const List<Locale> supportedLocales = [
-    Locale('en'),
-    Locale('hi'),
-    Locale('mr'),
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
   ];
 
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('mr')
+  ];
+
+  /// No description provided for @appName.
+  ///
+  /// In en, this message translates to:
+  /// **'QueueLess India'**
   String get appName;
+
+  /// No description provided for @tagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Line mein nahi, time par'**
   String get tagline;
+
+  /// No description provided for @tokenNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'TOKEN NUMBER'**
   String get tokenNumber;
+
+  /// No description provided for @proceedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'PROCEED TO: {counter}'**
   String proceedTo(String counter);
+
+  /// No description provided for @leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
   String get leave;
+
+  /// No description provided for @positionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'POSITION'**
   String get positionLabel;
+
+  /// No description provided for @estWaitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'EST. WAIT'**
   String get estWaitLabel;
+
+  /// No description provided for @counterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'COUNTER'**
   String get counterLabel;
+
+  /// No description provided for @waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
   String get waiting;
+
+  /// No description provided for @called.
+  ///
+  /// In en, this message translates to:
+  /// **'Called'**
   String get called;
+
+  /// No description provided for @inService.
+  ///
+  /// In en, this message translates to:
+  /// **'In Service'**
   String get inService;
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
   String get completed;
+
+  /// No description provided for @statusWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'WAITING'**
   String get statusWaiting;
+
+  /// No description provided for @statusCalled.
+  ///
+  /// In en, this message translates to:
+  /// **'CALLED NOW'**
   String get statusCalled;
+
+  /// No description provided for @statusInService.
+  ///
+  /// In en, this message translates to:
+  /// **'IN SERVICE'**
   String get statusInService;
+
+  /// No description provided for @statusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETED'**
   String get statusCompleted;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'CANCELLED'**
   String get statusCancelled;
+
+  /// No description provided for @semanticsTokenNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Token number {number}'**
   String semanticsTokenNumber(int number);
+
+  /// No description provided for @semanticsCalledAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'Called, proceed to counter {counter}'**
   String semanticsCalledAnnouncement(String counter);
+
+  /// No description provided for @semanticsWaitingStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 4: Waiting'**
   String get semanticsWaitingStep;
+
+  /// No description provided for @semanticsCalledStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 4: Called'**
   String get semanticsCalledStep;
+
+  /// No description provided for @semanticsInServiceStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3 of 4: In Service'**
   String get semanticsInServiceStep;
+
+  /// No description provided for @semanticsCompletedStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 4 of 4: Completed'**
   String get semanticsCompletedStep;
+
+  /// No description provided for @selectService.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT SERVICE'**
   String get selectService;
+
+  /// No description provided for @yourName.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Name'**
   String get yourName;
+
+  /// No description provided for @getToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Token'**
   String get getToken;
+
+  /// No description provided for @joinLiveQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Live Queue'**
   String get joinLiveQueue;
+
+  /// No description provided for @nowServing.
+  ///
+  /// In en, this message translates to:
+  /// **'NOW SERVING'**
   String get nowServing;
+
+  /// No description provided for @live.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE'**
   String get live;
+
+  /// No description provided for @offline.
+  ///
+  /// In en, this message translates to:
+  /// **'OFFLINE'**
   String get offline;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
   String get close;
+
+  /// No description provided for @merchantConsole.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant Console'**
   String get merchantConsole;
+
+  /// No description provided for @callNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Call Next'**
   String get callNext;
+
+  /// No description provided for @recall.
+  ///
+  /// In en, this message translates to:
+  /// **'Recall'**
   String get recall;
+
+  /// No description provided for @completeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
   String get completeAction;
+
+  /// No description provided for @skipAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip / No-Show'**
   String get skipAction;
+
+  /// No description provided for @pauseQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause Queue'**
   String get pauseQueue;
+
+  /// No description provided for @resumeQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume Queue'**
   String get resumeQueue;
+
+  /// No description provided for @walkInButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk-in'**
   String get walkInButton;
+
+  /// No description provided for @tvBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'TV Calling Board'**
   String get tvBoard;
+
+  /// No description provided for @qrStandee.
+  ///
+  /// In en, this message translates to:
+  /// **'Print QR Standee'**
   String get qrStandee;
+
+  /// No description provided for @nextUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Up'**
   String get nextUp;
+
+  /// No description provided for @waitingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
   String get waitingCount;
+
+  /// No description provided for @completedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed Today'**
   String get completedToday;
+
+  /// No description provided for @counter.
+  ///
+  /// In en, this message translates to:
+  /// **'Counter'**
   String get counter;
+
+  /// No description provided for @reconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'RECONNECTING'**
   String get reconnecting;
+
+  /// No description provided for @autostartGuidanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Alarm Setup'**
   String get autostartGuidanceTitle;
+
+  /// No description provided for @autostartGuidanceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To ensure token alerts ring over silent/DND when phone is locked, please allow Auto-start for QueueLess.'**
   String get autostartGuidanceDesc;
+
+  /// No description provided for @enableNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Now'**
   String get enableNow;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
   String get dismiss;
 }
 
@@ -77,343 +406,32 @@ class _AppLocalizationsDelegate
   const _AppLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) =>
-      ['en', 'hi', 'mr'].contains(locale.languageCode);
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
 
   @override
-  Future<AppLocalizations> load(Locale locale) {
-    switch (locale.languageCode) {
-      case 'hi':
-        return SynchronousFuture<AppLocalizations>(AppLocalizationsHi());
-      case 'mr':
-        return SynchronousFuture<AppLocalizations>(AppLocalizationsMr());
-      case 'en':
-      default:
-        return SynchronousFuture<AppLocalizations>(AppLocalizationsEn());
-    }
-  }
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'mr'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
-class AppLocalizationsEn extends AppLocalizations {
-  AppLocalizationsEn() : super(const Locale('en'));
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'mr':
+      return AppLocalizationsMr();
+  }
 
-  @override
-  String get appName => 'QueueLess India';
-  @override
-  String get tagline => 'Line mein nahi, time par';
-  @override
-  String get tokenNumber => 'TOKEN NUMBER';
-  @override
-  String proceedTo(String counter) => 'PROCEED TO: $counter';
-  @override
-  String get leave => 'Leave';
-  @override
-  String get positionLabel => 'POSITION';
-  @override
-  String get estWaitLabel => 'EST. WAIT';
-  @override
-  String get counterLabel => 'COUNTER';
-  @override
-  String get waiting => 'Waiting';
-  @override
-  String get called => 'Called';
-  @override
-  String get inService => 'In Service';
-  @override
-  String get completed => 'Completed';
-  @override
-  String get statusWaiting => 'WAITING';
-  @override
-  String get statusCalled => 'CALLED NOW';
-  @override
-  String get statusInService => 'IN SERVICE';
-  @override
-  String get statusCompleted => 'COMPLETED';
-  @override
-  String get statusCancelled => 'CANCELLED';
-  @override
-  String semanticsTokenNumber(int number) => 'Token number $number';
-  @override
-  String semanticsCalledAnnouncement(String counter) =>
-      'Called, proceed to counter $counter';
-  @override
-  String get semanticsWaitingStep => 'Step 1 of 4: Waiting';
-  @override
-  String get semanticsCalledStep => 'Step 2 of 4: Called';
-  @override
-  String get semanticsInServiceStep => 'Step 3 of 4: In Service';
-  @override
-  String get semanticsCompletedStep => 'Step 4 of 4: Completed';
-  @override
-  String get selectService => 'SELECT SERVICE';
-  @override
-  String get yourName => 'Your Name';
-  @override
-  String get getToken => 'Get Token';
-  @override
-  String get joinLiveQueue => 'Join Live Queue';
-  @override
-  String get nowServing => 'NOW SERVING';
-  @override
-  String get live => 'LIVE';
-  @override
-  String get offline => 'OFFLINE';
-  @override
-  String get close => 'Close';
-  @override
-  String get merchantConsole => 'Merchant Console';
-  @override
-  String get callNext => 'Call Next';
-  @override
-  String get recall => 'Recall';
-  @override
-  String get completeAction => 'Complete';
-  @override
-  String get skipAction => 'Skip / No-Show';
-  @override
-  String get pauseQueue => 'Pause Queue';
-  @override
-  String get resumeQueue => 'Resume Queue';
-  @override
-  String get walkInButton => 'Walk-in';
-  @override
-  String get tvBoard => 'TV Calling Board';
-  @override
-  String get qrStandee => 'Print QR Standee';
-  @override
-  String get nextUp => 'Next Up';
-  @override
-  String get waitingCount => 'Waiting';
-  @override
-  String get completedToday => 'Completed Today';
-  @override
-  String get counter => 'Counter';
-  @override
-  String get reconnecting => 'RECONNECTING';
-  @override
-  String get autostartGuidanceTitle => 'Background Alarm Setup';
-  @override
-  String get autostartGuidanceDesc =>
-      'To ensure token alerts ring over silent/DND when phone is locked, please allow Auto-start for QueueLess.';
-  @override
-  String get enableNow => 'Enable Now';
-  @override
-  String get dismiss => 'Dismiss';
-}
-
-class AppLocalizationsHi extends AppLocalizations {
-  AppLocalizationsHi() : super(const Locale('hi'));
-
-  @override
-  String get appName => 'कतारमुक्त भारत (QueueLess India)';
-  @override
-  String get tagline => 'लाइन में नहीं, टाइम पर';
-  @override
-  String get tokenNumber => 'टोकन नंबर';
-  @override
-  String proceedTo(String counter) => 'काउंटर $counter पर जाएं';
-  @override
-  String get leave => 'कतार छोड़ें';
-  @override
-  String get positionLabel => 'स्थान';
-  @override
-  String get estWaitLabel => 'अनुमानित समय';
-  @override
-  String get counterLabel => 'काउंटर';
-  @override
-  String get waiting => 'प्रतीक्षा';
-  @override
-  String get called => 'बुलाया';
-  @override
-  String get inService => 'सेवा में';
-  @override
-  String get completed => 'सम्पन्न';
-  @override
-  String get statusWaiting => 'प्रतीक्षारत';
-  @override
-  String get statusCalled => 'अभी बुलाया गया';
-  @override
-  String get statusInService => 'सेवा जारी';
-  @override
-  String get statusCompleted => 'सम्पन्न';
-  @override
-  String get statusCancelled => 'रद्द';
-  @override
-  String semanticsTokenNumber(int number) => 'टोकन नंबर $number';
-  @override
-  String semanticsCalledAnnouncement(String counter) =>
-      'बुलाया गया, काउंटर $counter पर जाएं';
-  @override
-  String get semanticsWaitingStep => 'चरण 1 / 4: प्रतीक्षा';
-  @override
-  String get semanticsCalledStep => 'चरण 2 / 4: बुलाया गया';
-  @override
-  String get semanticsInServiceStep => 'चरण 3 / 4: सेवा जारी';
-  @override
-  String get semanticsCompletedStep => 'चरण 4 / 4: सम्पन्न';
-  @override
-  String get selectService => 'सेवा चुनें';
-  @override
-  String get yourName => 'आपका नाम';
-  @override
-  String get getToken => 'टोकन लें';
-  @override
-  String get joinLiveQueue => 'लाइव कतार में जुड़ें';
-  @override
-  String get nowServing => 'वर्तमान सेवा';
-  @override
-  String get live => 'लाइव';
-  @override
-  String get offline => 'ऑफ़लाइन';
-  @override
-  String get close => 'बंद करें';
-  @override
-  String get merchantConsole => 'व्यापारी कंसोल';
-  @override
-  String get callNext => 'अगला बुलाएं';
-  @override
-  String get recall => 'दोबारा बुलाएं';
-  @override
-  String get completeAction => 'पूर्ण करें';
-  @override
-  String get skipAction => 'छोड़ें / गैरहजिर';
-  @override
-  String get pauseQueue => 'कतार रोकें';
-  @override
-  String get resumeQueue => 'कतार शुरू करें';
-  @override
-  String get walkInButton => 'वॉक-इन';
-  @override
-  String get tvBoard => 'टीवी कॉलिंग बोर्ड';
-  @override
-  String get qrStandee => 'क्यूआर स्टैंडी प्रिंट करें';
-  @override
-  String get nextUp => 'अगला';
-  @override
-  String get waitingCount => 'प्रतीक्षारत';
-  @override
-  String get completedToday => 'आज पूर्ण';
-  @override
-  String get counter => 'काउंटर';
-  @override
-  String get reconnecting => 'पुनः कनेक्ट हो रहा है';
-  @override
-  String get autostartGuidanceTitle => 'बैकग्राउंड अलार्म अनुमति';
-  @override
-  String get autostartGuidanceDesc =>
-      'स्क्रीन लॉक होने पर भी टोकन अलार्म बजने के लिए कृपया कतारमुक्त भारत (QueueLess) को ऑटो-स्टार्ट की अनुमति दें।';
-  @override
-  String get enableNow => 'अभी अनुमति दें';
-  @override
-  String get dismiss => 'बाद में';
-}
-
-class AppLocalizationsMr extends AppLocalizations {
-  AppLocalizationsMr() : super(const Locale('mr'));
-
-  @override
-  String get appName => 'कतारमुक्त भारत (QueueLess India)';
-  @override
-  String get tagline => 'रांगेत नाही, वेळेवर';
-  @override
-  String get tokenNumber => 'टोकन क्रमांक';
-  @override
-  String proceedTo(String counter) => 'काउंटर $counter कडे जा';
-  @override
-  String get leave => 'रांग सोडा';
-  @override
-  String get positionLabel => 'क्रमांक स्थान';
-  @override
-  String get estWaitLabel => 'अंदाजे वेळ';
-  @override
-  String get counterLabel => 'काउंटर';
-  @override
-  String get waiting => 'प्रतीक्षा';
-  @override
-  String get called => 'बोलावले';
-  @override
-  String get inService => 'सेवेमध्ये';
-  @override
-  String get completed => 'पूर्ण';
-  @override
-  String get statusWaiting => 'प्रतीक्षेत';
-  @override
-  String get statusCalled => 'आत्ताच बोलावले आहे';
-  @override
-  String get statusInService => 'सेवा सुरू आहे';
-  @override
-  String get statusCompleted => 'पूर्ण झाले';
-  @override
-  String get statusCancelled => 'रद्द केले';
-  @override
-  String semanticsTokenNumber(int number) => 'टोकन क्रमांक $number';
-  @override
-  String semanticsCalledAnnouncement(String counter) =>
-      'बोलावले आहे, काउंटर $counter कडे जा';
-  @override
-  String get semanticsWaitingStep => 'टप्पा 1 / 4: प्रतीक्षा';
-  @override
-  String get semanticsCalledStep => 'टप्पा 2 / 4: बोलावले आहे';
-  @override
-  String get semanticsInServiceStep => 'टप्पा 3 / 4: सेवा सुरू आहे';
-  @override
-  String get semanticsCompletedStep => 'टप्पा 4 / 4: पूर्ण झाले';
-  @override
-  String get selectService => 'सेवा निवडा';
-  @override
-  String get yourName => 'तुमचे नाव';
-  @override
-  String get getToken => 'टोकन मिळवा';
-  @override
-  String get joinLiveQueue => 'थेट रांगेत सहभागी व्हा';
-  @override
-  String get nowServing => 'सध्या सुरू असलेला टोकन';
-  @override
-  String get live => 'थेट (Live)';
-  @override
-  String get offline => 'ऑफलाईन';
-  @override
-  String get close => 'बंद करा';
-  @override
-  String get merchantConsole => 'व्यापारी कन्सोल';
-  @override
-  String get callNext => 'पुढील बोलवा';
-  @override
-  String get recall => 'पुन्हा बोलवा';
-  @override
-  String get completeAction => 'पूर्ण करा';
-  @override
-  String get skipAction => 'वगळा / गैरहजर';
-  @override
-  String get pauseQueue => 'रांग थांबवा';
-  @override
-  String get resumeQueue => 'रांग सुरू करा';
-  @override
-  String get walkInButton => 'वॉक-इन';
-  @override
-  String get tvBoard => 'टीव्ही कॉलिंग बोर्ड';
-  @override
-  String get qrStandee => 'क्यूआर स्टँडी प्रिंट करा';
-  @override
-  String get nextUp => 'पुढील टोकन';
-  @override
-  String get waitingCount => 'प्रतीक्षेत';
-  @override
-  String get completedToday => 'आज पूर्ण';
-  @override
-  String get counter => 'काउंटर';
-  @override
-  String get reconnecting => 'पुन्हा जोडत आहे';
-  @override
-  String get autostartGuidanceTitle => 'पार्श्वभूमी अलार्म सेटिंग';
-  @override
-  String get autostartGuidanceDesc =>
-      'स्क्रीन लॉक असतानाही टोकन अलार्म वाजण्यासाठी QueueLess साठी ऑटो-स्टार्ट सुरू करा.';
-  @override
-  String get enableNow => 'आता सुरू करा';
-  @override
-  String get dismiss => 'नंतर';
+  throw FlutterError(
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

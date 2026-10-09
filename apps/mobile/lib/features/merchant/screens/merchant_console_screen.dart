@@ -25,7 +25,7 @@ class MerchantConsoleScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(merchantDashboardProvider(branchId));
     final notifier = ref.read(merchantDashboardProvider(branchId).notifier);
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final currentToken = state.currentToken;
 
     return Scaffold(

@@ -23,9 +23,9 @@ class QrStandeePdfService {
     final joinUrl = 'https://queueless.in/b/$branchId';
 
     // Fetch Google Fonts for PDF rendering
-    final fontHeading = await PdfGoogleFonts.bricolageGrotesqueBold();
-    final fontBody = await PdfGoogleFonts.manropeRegular();
-    final fontBodyBold = await PdfGoogleFonts.manropeBold();
+    final fontHeading = await PdfGoogleFonts.robotoBold();
+    final fontBody = await PdfGoogleFonts.robotoRegular();
+    final fontBodyBold = await PdfGoogleFonts.robotoBold();
 
     pdf.addPage(
       pw.Page(
@@ -63,7 +63,7 @@ class QrStandeePdfService {
                     ),
                     pw.SizedBox(height: 12),
                     pw.Text(
-                      '\"Line mein nahi, time par\"',
+                      '"Line mein nahi, time par"',
                       style: pw.TextStyle(
                         font: fontBodyBold,
                         fontSize: 18,
@@ -97,10 +97,10 @@ class QrStandeePdfService {
                 // Center QR Code Card
                 pw.Container(
                   padding: const pw.EdgeInsets.all(20),
-                  decoration: pw.BoxDecoration(
+                  decoration: const pw.BoxDecoration(
                     color: PdfColors.white,
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(20)),
-                    boxShadow: const [
+                    borderRadius: pw.BorderRadius.all(pw.Radius.circular(20)),
+                    boxShadow: [
                       pw.BoxShadow(
                         color: PdfColors.black,
                         blurRadius: 10,

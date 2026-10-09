@@ -122,7 +122,7 @@ class TokenTicketWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final currentStep = _getStepIndex(token.status);
     final isCalled = token.status == CustomerTokenStatus.called;
 
@@ -285,9 +285,9 @@ class TokenTicketWidget extends StatelessWidget {
               ),
 
               // ================= PERFORATION FOLD =================
-              CustomPaint(
-                size: const Size(double.infinity, 24),
-                painter: const PerforationPainter(),
+              const CustomPaint(
+                size: Size(double.infinity, 24),
+                painter: PerforationPainter(),
               ),
 
               // ================= TICKET LOWER STUB =================

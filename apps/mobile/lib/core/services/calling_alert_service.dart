@@ -101,7 +101,7 @@ class CallingAlertService {
       audioAttributesUsage: AudioAttributesUsage.alarm,
     );
 
-    final androidForegroundChannel = AndroidNotificationChannel(
+    const androidForegroundChannel = AndroidNotificationChannel(
       foregroundChannelId,
       foregroundChannelName,
       description: 'Maintains live queue sync on low-end devices',

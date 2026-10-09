@@ -64,7 +64,7 @@ abstract class AppTypography {
   );
 
   // High-Contrast Mono Numerals (JetBrains Mono)
-  static TextStyle tokenHeroNumber = GoogleFonts.jetbrainsMono(
+  static TextStyle tokenHeroNumber = GoogleFonts.jetBrainsMono(
     fontSize: 72,
     fontWeight: FontWeight.w800,
     color: AppColors.primary,
@@ -72,20 +72,23 @@ abstract class AppTypography {
     height: 1.0,
   );
 
-  static TextStyle tokenMediumNumber = GoogleFonts.jetbrainsMono(
+  static TextStyle heroToken = tokenHeroNumber;
+  static TextStyle button = labelBold;
+
+  static TextStyle tokenMediumNumber = GoogleFonts.jetBrainsMono(
     fontSize: 36,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
     letterSpacing: -1,
   );
 
-  static TextStyle telemetryValue = GoogleFonts.jetbrainsMono(
+  static TextStyle telemetryValue = GoogleFonts.jetBrainsMono(
     fontSize: 18,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
   );
 
-  static TextStyle telemetryLabel = GoogleFonts.jetbrainsMono(
+  static TextStyle telemetryLabel = GoogleFonts.jetBrainsMono(
     fontSize: 11,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,

@@ -6,6 +6,7 @@ abstract class AppColors {
   // Dark Theme Base Canvas
   static const Color background = Color(0xFF0B0F19);
   static const Color panel = Color(0xFF121A2B);
+  static const Color surface = Color(0xFF121A2B);
   static const Color card = Color(0xFF162032);
   static const Color cardBorder = Color(0xFF23324D);
 

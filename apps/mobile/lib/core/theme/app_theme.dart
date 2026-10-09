@@ -13,7 +13,6 @@ abstract class AppTheme {
         primary: AppColors.primary,
         secondary: AppColors.success,
         surface: AppColors.card,
-        background: AppColors.background,
         error: AppColors.alert,
         onPrimary: Colors.white,
         onSurface: AppColors.textPrimary,
@@ -25,7 +24,7 @@ abstract class AppTheme {
         titleTextStyle: AppTypography.headingLarge,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.card,
         elevation: 0,
         shape: RoundedRectangleBorder(

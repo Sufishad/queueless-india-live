@@ -57,7 +57,7 @@ class _WalkInDialogState extends State<WalkInDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
       backgroundColor: AppColors.panel,
@@ -158,7 +158,7 @@ class _WalkInDialogState extends State<WalkInDialog> {
                 style: AppTypography.telemetryLabel.copyWith(fontSize: 10),
               ),
               value: _isSeniorPriority,
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
               onChanged: (val) => setState(() => _isSeniorPriority = val),
             ),
           ],
