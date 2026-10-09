@@ -288,4 +288,66 @@ describe('QueueService (State Machine & Logic)', () => {
       }
     });
   });
+
+  describe('Kill-Switch / Queue Pause & Resume controls', () => {
+    it('should pause branch queue, persist settings, and emit realtime broadcast to waiting tokens', async () => {
+      prisma.branch.update.mockResolvedValue({
+        id: mockBranchId,
+        status: BranchStatus.PAUSED,
+      });
+      prisma.queueSettings.upsert.mockResolvedValue({
+        branchId: mockBranchId,
+        isPaused: true,
+      });
+      jest.spyOn(service, 'broadcastQueueSnapshot').mockResolvedValue(undefined);
+
+      const result = await service.pauseQueue(
+        mockBranchId,
+        'Power outage in sector 4. Emergency maintenance in progress.',
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.status).toBe(BranchStatus.PAUSED);
+      expect(prisma.branch.update).toHaveBeenCalledWith({
+        where: { id: mockBranchId },
+        data: { status: BranchStatus.PAUSED },
+      });
+      expect(prisma.queueSettings.upsert).toHaveBeenCalledWith({
+        where: { branchId: mockBranchId },
+        update: { isPaused: true },
+        create: { branchId: mockBranchId, isPaused: true },
+      });
+      expect(realtime.emitQueuePaused).toHaveBeenCalledWith(
+        mockBranchId,
+        'Power outage in sector 4. Emergency maintenance in progress.',
+      );
+    });
+
+    it('should resume branch queue, restore LIVE status, and broadcast resumption event', async () => {
+      prisma.branch.update.mockResolvedValue({
+        id: mockBranchId,
+        status: BranchStatus.LIVE,
+      });
+      prisma.queueSettings.upsert.mockResolvedValue({
+        branchId: mockBranchId,
+        isPaused: false,
+      });
+      jest.spyOn(service, 'broadcastQueueSnapshot').mockResolvedValue(undefined);
+
+      const result = await service.resumeQueue(mockBranchId);
+
+      expect(result.success).toBe(true);
+      expect(result.status).toBe(BranchStatus.LIVE);
+      expect(prisma.branch.update).toHaveBeenCalledWith({
+        where: { id: mockBranchId },
+        data: { status: BranchStatus.LIVE },
+      });
+      expect(prisma.queueSettings.upsert).toHaveBeenCalledWith({
+        where: { branchId: mockBranchId },
+        update: { isPaused: false },
+        create: { branchId: mockBranchId, isPaused: false },
+      });
+      expect(realtime.emitQueueResumed).toHaveBeenCalledWith(mockBranchId);
+    });
+  });
 });

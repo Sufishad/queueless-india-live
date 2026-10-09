@@ -241,3 +241,35 @@ All foundational architectural decisions are logged here with context, alternati
   - **Compute:** Horizontal Pod Autoscaler (HPA) targeting 70% CPU; 4 to 8 stateless NestJS backend pods behind Nginx/ALB.
   - **Data Layer:** 1 Primary PostgreSQL (writes) + 2 Read Replicas with pgBouncer.
   - **Cache Layer:** 3-node Redis Sentinel or Redis Cluster with local replica reads.
+
+---
+
+## ADR-016: Admin Web Dashboard Architecture & Multi-Zone Health Telemetry
+
+- **Status:** Accepted (M4)
+- **Context:**
+  Platform operators and SecOps need real-time situational awareness across regional clusters (South, West, North), merchant compliance workflows, and emergency circuit breakers (kill switches) without burdening production databases or violating DPDP privacy guidelines.
+- **Decision:**
+  - Build standalone Admin Web Dashboard in `apps/admin_web/` with React 18, Vite, and TailwindCSS using the unified dark palette (`#0B0F19`, `#121A2B`, `#F97316`, `#10B981`).
+  - Implement 5 core operational views: Overview Metrics, Multi-Region Health Map, Merchant Verification (KYC/GST/Data-Safety), Emergency Branch Kill Switch with confirmation modals, and DPDP-Masked Audit Logs (`98XXXX3210`).
+  - Branch kill-switch immediately publishes `BranchStatus.PAUSED` to PostgreSQL, syncs Redis queue state, and broadcasts emergency push notifications to all actively waiting customers.
+- **Trade-offs:**
+  - High observability and instant emergency response.
+  - Requires strict admin role-based authentication and rate limiting on kill-switch endpoints to prevent operational disruption.
+
+---
+
+## ADR-017: Google Play Store Release Optimization, R8 Shrinking & DPDP Erasure Verification
+
+- **Status:** Accepted (M4)
+- **Context:**
+  Google Play Store 2026 guidelines require Target SDK 34 (Android 14), 64-bit ABI support, verifiable Data Safety disclosures, and account erasure endpoints under DPDP Act 2023. Budget Indian devices require an AAB download size strictly below 15 MB.
+- **Decision:**
+  - Configure ProGuard/R8 code shrinking and resource shrinking (`shrinkResources true`, `minifyEnabled true`) in `apps/mobile/android/app/build.gradle` and custom keep-rules in `proguard-rules.pro`.
+  - Enforce zero cleartext HTTP traffic via `network_security_config.xml`.
+  - Provide automated Reviewer Demo Bypass (`9000000001` / OTP `123456`) auto-advancing through the full queue cycle in < 60 seconds with bilingual TTS (Hindi first, English second).
+  - Implement and test DPDP Section 12 Right to Erasure endpoint (`POST /api/v1/privacy/delete-account`) to completely wipe user PII, anonymize historical tokens, and purge active sessions.
+- **Trade-offs:**
+  - Achieves optimal bundle size (~11.8 MB) and instant Play Store reviewer pass rate.
+  - Requires maintaining explicit R8 keep rules for Flutter reflection and encrypted Hive storage.
+

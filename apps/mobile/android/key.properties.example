@@ -1,0 +1,8 @@
+# QueueLess India Release Keystore Configuration Template
+# Copy this file to apps/mobile/android/key.properties and set production credentials
+# NEVER commit key.properties or the production .jks file to Git
+
+keyAlias=queueless_release
+keyPassword=REPLACE_WITH_RELEASE_KEY_PASSWORD
+storeFile=../queueless-release-key.jks
+storePassword=REPLACE_WITH_KEYSTORE_PASSWORD

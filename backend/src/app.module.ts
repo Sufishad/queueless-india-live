@@ -7,6 +7,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { QueueModule } from './modules/queue/queue.module';
 import { HealthModule } from './modules/health/health.module';
 import { RetentionModule } from './modules/retention/retention.module';
+import { PrivacyModule } from './modules/privacy/privacy.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { RetentionModule } from './modules/retention/retention.module';
     QueueModule,
     HealthModule,
     RetentionModule,
+    PrivacyModule,
   ],
   controllers: [],
   providers: [],
