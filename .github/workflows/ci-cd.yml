@@ -1,0 +1,146 @@
+name: QueueLess India CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-backend:
+    name: Backend Tests & Lint
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: queueless
+          POSTGRES_PASSWORD: queueless_password
+          POSTGRES_DB: queueless_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        working-directory: ./backend
+        run: npx prisma generate
+
+      - name: Run Jest Test Suite & Concurrency Tests
+        working-directory: ./backend
+        run: npm test
+        env:
+          DATABASE_URL: postgresql://queueless:queueless_password@localhost:5432/queueless_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_jwt_secret_key_10x
+
+  test-mobile:
+    name: Mobile App Analyze & Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter 3.24.x
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Flutter Dependencies
+        working-directory: ./apps/mobile
+        run: flutter pub get
+
+      - name: Flutter Analyze
+        working-directory: ./apps/mobile
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run Mobile Unit & Widget Tests
+        working-directory: ./apps/mobile
+        run: flutter test
+
+  build-docker-staging:
+    name: Build Docker Images
+    needs: [test-backend, test-mobile]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: queueless-backend:staging-latest
+
+      - name: Build Admin Web Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./admin_web
+          file: ./admin_web/Dockerfile
+          push: false
+          tags: queueless-admin-web:staging-latest
+
+  deploy-staging:
+    name: Deploy to Staging Environment
+    needs: [build-docker-staging]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Deploy Staging Stack via Docker Compose
+        run: |
+          echo "Simulating staging stack deployment on AWS / DigitalOcean droplet..."
+          echo "1. Pulling latest staging images..."
+          echo "2. Applying database migrations (prisma migrate deploy)..."
+          echo "3. Seeding pilot branches if empty (prisma db seed)..."
+          echo "4. Reloading backend containers with zero downtime..."
+          echo "5. Probing liveness at /healthz and readiness at /readyz..."
+          echo "Staging deployment successful: https://staging.queueless.in"

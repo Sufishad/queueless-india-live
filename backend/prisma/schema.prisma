@@ -111,6 +111,8 @@ model Branch {
   tokens        Token[]
   queueSettings QueueSettings?
   reviews       Review[]
+  dailyStats    DailyQueueStats[]
+  apiKeys       MerchantApiKey[]
 
   @@index([city, status])
   @@index([lat, lng])
@@ -232,4 +234,38 @@ model Review {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reviews")
+}
+
+// Milestone 3 Additive Model: Daily Queue Historical Aggregates & Analytics
+model DailyQueueStats {
+  id             String   @id @default(uuid())
+  branchId       String   @map("branch_id")
+  date           DateTime @db.Date
+  totalIssued    Int      @default(0) @map("total_issued")
+  totalServed    Int      @default(0) @map("total_served")
+  totalCancelled Int      @default(0) @map("total_cancelled")
+  totalNoShow    Int      @default(0) @map("total_no_show")
+  avgWaitMin     Float    @default(0.0) @map("avg_wait_min")
+  avgServiceMin  Float    @default(0.0) @map("avg_service_min")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, date], name: "branch_date_stats_unique")
+  @@map("daily_queue_stats")
+}
+
+// Milestone 3 Additive Model: Merchant Console API Keys (in addition to JWT)
+model MerchantApiKey {
+  id         String    @id @default(uuid())
+  branchId   String    @map("branch_id")
+  keyHash    String    @unique @map("key_hash") @db.VarChar(64) // SHA-256 hash of API key
+  label      String    @db.VarChar(100)
+  isActive   Boolean   @default(true) @map("is_active")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz(6)
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@map("merchant_api_keys")
 }

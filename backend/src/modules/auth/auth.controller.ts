@@ -2,11 +2,13 @@ import {
   Controller,
   Post,
   Body,
+  Req,
   HttpCode,
   HttpStatus,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
@@ -19,8 +21,13 @@ export class AuthController {
 
   @Post('otp/request')
   @HttpCode(HttpStatus.OK)
-  async requestOtp(@Body() dto: RequestOtpDto) {
-    return this.authService.requestOtp(dto.mobile);
+  async requestOtp(@Body() dto: RequestOtpDto, @Req() req: Request) {
+    const clientIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.ip ||
+      req.socket.remoteAddress ||
+      '127.0.0.1';
+    return this.authService.requestOtp(dto.mobile, clientIp);
   }
 
   @Post('otp/verify')

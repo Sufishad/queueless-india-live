@@ -4,6 +4,7 @@ import {
   HttpStatus,
   NotFoundException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import {
   TokenStatus,
@@ -16,6 +17,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { MetricsService } from '../health/metrics.service';
 import { getIstDateString, getIstDateMidnight } from '../../common/utils/date.util';
 import { JoinQueueDto } from './dto/join-queue.dto';
 import { WalkInDto } from './dto/walk-in.dto';
@@ -32,6 +34,7 @@ export class QueueService {
     private readonly redisService: RedisService,
     private readonly realtimeService: RealtimeService,
     private readonly notificationsService: NotificationsService,
+    @Optional() private readonly metricsService?: MetricsService,
   ) {}
 
   /**
@@ -180,6 +183,9 @@ export class QueueService {
 
     // 8. Broadcast updated queue stats via WebSocket
     await this.broadcastQueueSnapshot(branchId);
+
+    // 9. Increment Prometheus metrics counter
+    this.metricsService?.incrementTokensIssued(branchId, token.source);
 
     return response;
   }
@@ -507,6 +513,7 @@ export class QueueService {
     });
 
     await this.broadcastQueueSnapshot(branchId);
+    this.metricsService?.incrementTokensIssued(branchId, 'WALK_IN');
 
     return {
       success: true,
@@ -718,7 +725,10 @@ export class QueueService {
 
     const estWaitMin = await this.calculateWaitTime(branchId, waitingCount);
 
-    this.realtimeService.emitQueueUpdate(branchId, {
+    // Record Prometheus metrics
+    this.metricsService?.setQueueWaitTime(branchId, estWaitMin * 60);
+
+    const snapshotPayload = {
       branchId,
       serving: servingToken ? servingToken.number : null,
       waiting_count: waitingCount,
@@ -726,6 +736,178 @@ export class QueueService {
       next_numbers: nextNumbers,
       active_counters: Math.max(1, activeCounters),
       updated_at: new Date().toISOString(),
+    };
+
+    // Invalidate Redis snapshot cache on state changes
+    const snapshotKey = `queue:snapshot:${branchId}:${getIstDateString()}`;
+    await this.redisService.set(snapshotKey, JSON.stringify(snapshotPayload), 1);
+
+    this.realtimeService.emitQueueUpdate(branchId, snapshotPayload);
+  }
+
+  /**
+   * Milestone 3 Performance & Caching:
+   * GET live queue state snapshot with 1-second Redis cache to prevent DB overload under load
+   */
+  async getQueueStateSnapshot(branchId: string) {
+    const dateIstStr = getIstDateString();
+    const snapshotKey = `queue:snapshot:${branchId}:${dateIstStr}`;
+
+    // 1. Check Redis 1-sec snapshot cache
+    const cached = await this.redisService.get(snapshotKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {
+        // Fallback to fresh calculation if parse fails
+      }
+    }
+
+    // 2. Fetch fresh queue state from DB
+    const dateIstMidnight = getIstDateMidnight();
+
+    const branch = await this.prisma.branch.findUnique({
+      where: { id: branchId },
+      select: { id: true, name: true, status: true },
     });
+
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branchId} not found`);
+    }
+
+    const servingToken = await this.prisma.token.findFirst({
+      where: {
+        branchId,
+        date: dateIstMidnight,
+        status: { in: [TokenStatus.CALLED, TokenStatus.IN_SERVICE] },
+      },
+      orderBy: { calledAt: 'desc' },
+      select: { number: true, calledCounterId: true },
+    });
+
+    const waitingTokens = await this.prisma.token.findMany({
+      where: {
+        branchId,
+        date: dateIstMidnight,
+        status: TokenStatus.WAITING,
+      },
+      orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
+      select: { number: true },
+    });
+
+    const waitingCount = waitingTokens.length;
+    const nextNumbers = waitingTokens.slice(0, 5).map((t) => t.number);
+
+    const activeCounters = await this.prisma.counter.count({
+      where: { branchId, isActive: true },
+    });
+
+    const estWaitMin = await this.calculateWaitTime(branchId, waitingCount);
+
+    const snapshot = {
+      branchId: branch.id,
+      branchName: branch.name,
+      isPaused: branch.status === BranchStatus.PAUSED,
+      serving: servingToken ? servingToken.number : null,
+      counter: servingToken?.calledCounterId || null,
+      waiting_count: waitingCount,
+      est_wait_min: estWaitMin,
+      next_numbers: nextNumbers,
+      active_counters: Math.max(1, activeCounters),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Cache in Redis for 1 second (high throughput buffer)
+    await this.redisService.set(snapshotKey, JSON.stringify(snapshot), 1);
+
+    return snapshot;
+  }
+
+  /**
+   * Milestone 3 Performance & Caching:
+   * Branch Discovery with 5-minute Redis Cache (300 seconds TTL)
+   */
+  async getDiscoveryBranches(city?: string, category?: string, search?: string) {
+    const cityKey = (city || 'all').toLowerCase();
+    const catKey = (category || 'all').toLowerCase();
+    const searchKey = (search || 'all').toLowerCase();
+    const cacheKey = `branch:discovery:${cityKey}:${catKey}:${searchKey}`;
+
+    // 1. Check Redis 5-minute cache
+    const cached = await this.redisService.get(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {
+        // Fallback to fresh query
+      }
+    }
+
+    // 2. Query Postgres
+    const where: any = {
+      status: { in: [BranchStatus.LIVE, BranchStatus.PAUSED] },
+    };
+
+    if (city && city.toLowerCase() !== 'all') {
+      where.city = { equals: city, mode: 'insensitive' };
+    }
+
+    if (category && category.toLowerCase() !== 'all') {
+      where.business = { category };
+    }
+
+    if (search && search.trim().length > 0 && search.toLowerCase() !== 'all') {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { address: { contains: search, mode: 'insensitive' } },
+        { area: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const branches = await this.prisma.branch.findMany({
+      where,
+      include: {
+        business: true,
+        services: { where: { isActive: true } },
+        queueSettings: true,
+        _count: {
+          select: {
+            tokens: {
+              where: {
+                date: getIstDateMidnight(),
+                status: TokenStatus.WAITING,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    const result = branches.map((b) => ({
+      id: b.id,
+      name: b.name,
+      category: b.business?.category || 'RETAIL',
+      businessName: b.business?.name,
+      address: b.address,
+      area: b.area,
+      city: b.city,
+      lat: Number(b.lat),
+      lng: Number(b.lng),
+      status: b.status,
+      waitingCount: b._count?.tokens || 0,
+      services: b.services.map((s) => ({
+        id: s.id,
+        name: s.name,
+        avgDurationMin: s.avgDurationMin,
+        priceInr: Number(s.priceInr),
+      })),
+      settings: b.queueSettings,
+    }));
+
+    // Cache in Redis with 5-minute (300s) TTL
+    await this.redisService.set(cacheKey, JSON.stringify(result), 300);
+
+    return result;
   }
 }

@@ -28,20 +28,24 @@ export class AuthService {
 
   /**
    * Request OTP for a given 10-digit mobile number.
-   * Rate limited to 3 requests per 10 minutes (600 seconds).
+   * Rate limited to 3 requests per 10 minutes per mobile, 10 per hour per IP.
    * OTP stored in Redis with 5 minutes (300 seconds) TTL.
    */
-  async requestOtp(mobile: string): Promise<{ success: boolean; message: string; expiresInSec: number; devOtp?: string }> {
+  async requestOtp(
+    mobile: string,
+    clientIp?: string,
+  ): Promise<{ success: boolean; message: string; expiresInSec: number; devOtp?: string }> {
+    const isReviewer = mobile === this.REVIEWER_MOBILE;
     const rateLimitKey = `otp:rate:${mobile}`;
     const otpCodeKey = `otp:code:${mobile}`;
 
-    // 1. Rate limit check (3 requests per 10 minutes)
+    // 1. Mobile-level rate limit check (3 requests per 10 minutes)
     const attempts = await this.redisService.incr(rateLimitKey);
     if (attempts === 1) {
       await this.redisService.expire(rateLimitKey, 600);
     }
 
-    if (attempts > 3) {
+    if (attempts > 3 && !isReviewer) {
       const ttl = await this.redisService.ttl(rateLimitKey);
       const remainingMinutes = Math.max(1, Math.ceil(ttl / 60));
       this.logger.warn(`OTP rate limit exceeded for ${SanitizeLogsInterceptor.maskPhoneNumber(mobile)}`);
@@ -49,6 +53,24 @@ export class AuthService {
         `Too many OTP requests. Maximum 3 attempts allowed. Please retry after ${remainingMinutes} minutes.`,
         HttpStatus.TOO_MANY_REQUESTS,
       );
+    }
+
+    // 1b. IP-level rate limit check (10 requests per 1 hour)
+    if (clientIp && !isReviewer) {
+      const ipRateKey = `otp:rate:ip:${clientIp}`;
+      const ipAttempts = await this.redisService.incr(ipRateKey);
+      if (ipAttempts === 1) {
+        await this.redisService.expire(ipRateKey, 3600);
+      }
+      if (ipAttempts > 10) {
+        const ipTtl = await this.redisService.ttl(ipRateKey);
+        const remainingMinutes = Math.max(1, Math.ceil(ipTtl / 60));
+        this.logger.warn(`OTP IP rate limit exceeded for IP: ${clientIp}`);
+        throw new HttpException(
+          `Too many OTP requests from this IP address. Maximum 10 per hour allowed. Please retry after ${remainingMinutes} minutes.`,
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
     }
 
     // 2. Generate 6-digit OTP
@@ -142,10 +164,26 @@ export class AuthService {
 
   /**
    * Refresh expired access token using valid refresh token.
+   * Milestone 3 Security Hardening: JWT Rotation & Blacklist
+   * Invalidates old refresh token in Redis (7d TTL) upon successful issuance.
    */
   async refreshToken(refreshToken: string) {
     try {
+      const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+      const blacklistKey = `jwt:blacklist:${tokenHash}`;
+
+      // Check if refresh token was already used/revoked
+      const isBlacklisted = await this.redisService.get(blacklistKey);
+      if (isBlacklisted) {
+        this.logger.warn(`Attempt to use revoked/blacklisted refresh token: ${tokenHash.substring(0, 8)}...`);
+        throw new UnauthorizedException('Refresh token has been revoked or previously rotated');
+      }
+
       const payload = this.jwtService.verify(refreshToken);
+
+      // Invalidate current refresh token in Redis with 7-day TTL (604800s)
+      await this.redisService.set(blacklistKey, 'revoked', 7 * 86400);
+
       const newPayload = {
         sub: payload.sub,
         mobile: payload.mobile,
@@ -159,7 +197,8 @@ export class AuthService {
         accessToken,
         refreshToken: newRefreshToken,
       };
-    } catch {
+    } catch (err: any) {
+      if (err instanceof UnauthorizedException) throw err;
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
   }

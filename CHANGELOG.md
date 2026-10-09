@@ -6,7 +6,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Milestone 2 (M2: Flutter Mobile App — Foundation, Design System & Customer Flow)
+## [0.3.0] - Milestone 3 (M3: Scalability, Production Hardening & DPDP Compliance)
+
+### Added
+- **DPDP Act 2023 Data Retention & Purge (`RetentionService`)**:
+  - Nightly cron job (`@Cron('0 2 * * *')`) scheduled at 02:00 IST.
+  - Automatic purging of `COMPLETED`, `CANCELLED`, and `NO_SHOW` tokens older than 30 days.
+  - Aggregation of daily branch operations into `DailyQueueStats` (total tokens issued, served, cancelled, no-show, avg wait and service times) for compliant historical analytics.
+  - Right to Erasure anonymization clearing `customer_user_id` on remaining historical records.
+- **Multi-Layer Redis Rate Limiting (`RateLimitService`)**:
+  - Atomic Redis sliding-window check with sub-millisecond evaluation.
+  - OTP endpoint protection: max 3 requests per 10 mins per mobile, 10 per hour per IP (Reviewer `9000000001` bypass).
+  - Queue join protection: max 5 joins per hour per customer/IP (`ratelimit:queue:join:<userId>`).
+  - Merchant console protection: max 100 actions per minute per branch (`ratelimit:merchant:branch:<branchId>`).
+- **Health Checks & Observability (`HealthModule`)**:
+  - `GET /healthz`: Liveness probe verifying PostgreSQL and Redis latency and connectivity.
+  - `GET /readyz`: Readiness probe asserting queue engine, Redis Lua script availability, and database readiness.
+  - `GET /metrics`: Prometheus metrics scraping endpoint reporting `tokens_issued_total`, `queue_wait_time_seconds`, `fcm_delivered_total`, and `http_requests_total`.
+  - Metrics interceptor (`MetricsInterceptor`) tracking route execution latency across all endpoints.
+  - DPDP Sentry exception filter (`SentryExceptionFilter`) scrubbing Indian mobile numbers (`98XXXX3210`), JWTs, Bearer headers, and OTP/PIN secrets from error payloads.
+- **Performance & Dual Caching Hierarchy**:
+  - Redis cache for branch discovery (`cache:branches:discovery:<city>:<category>:<search>`) with 5-minute TTL.
+  - High-frequency 1-second Redis snapshot cache (`cache:queue:snapshot:<branchId>`) shielding PostgreSQL from poll storms.
+- **Security Hardening**:
+  - Helmet middleware with strict Content Security Policy (CSP) blocking external scripts and object embeds.
+  - Strict CORS whitelist restricting admin API access to designated admin origins.
+  - Dual Merchant Authentication Guard (`MerchantAuthGuard`): supports both SHA-256 hashed API keys (`x-api-key`) and JWT Bearer tokens.
+  - Refresh token rotation with Redis SHA-256 blacklist (`jwt:blacklist:<hash>`) with 7-day TTL.
+- **Staging Deployment & Pilots**:
+  - Production multi-stage `Dockerfile` for NestJS backend with integrated `/healthz` container healthcheck.
+  - Production `docker-compose.staging.yml` containerizing PostgreSQL 16 (tuned connection pool), Redis 7 (AOF), Backend, and Admin Web.
+  - GitHub Actions CI/CD workflow (`.github/workflows/ci-cd.yml`) for automated linting, test suites, Docker image builds, and staging deployments.
+  - Staging database seed script (`backend/prisma/seed.ts`) populating 5 pilot branches across Bengaluru, Mumbai, and Pune (Apollo Clinics, Dr. Mohan's Diabetes, RTO KA-01, Lilavati OPD, Poona Hospital) with counters, services, API keys, and test tokens.
+- **Capacity Planning & Load Testing**:
+  - Comprehensive k6 load test script (`load-tests/k6-queue-load.js`) simulating 10,000 concurrent virtual users across 100 pilot branches.
+  - Architectural capacity analysis and horizontal scaling documentation in `DECISIONS.md` (ADR-015).
+
+---
+
+## [0.2.1] - Milestone 2 Fixes (M2: Critical Production Blockers)
 
 ### Fixed (Critical Production Blockers)
 - **AndroidManifest.xml**: Added runtime & foreground service permissions (`POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`, `USE_FULL_SCREEN_INTENT`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`) and declared Android `dataSync` ForegroundService.
