@@ -6,7 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Milestone 0 (M0: Foundation, Architecture & Contracts) [In-Progress]
+## [Unreleased] - Milestone 1 (M1: Backend Core & Realtime) [In-Progress]
+
+### Added
+- **Prisma & Redis Infrastructure**:
+  - `PrismaService` (`backend/src/modules/prisma/prisma.service.ts`) with graceful shutdown lifecycle.
+  - `RedisService` (`backend/src/modules/redis/redis.service.ts`) with dynamic Lua script execution from `scripts/` directory and memory caching.
+  - Baseline atomic sequence Lua script (`backend/scripts/atomic_sequence.lua`).
+- **OTP Auth Module**:
+  - `POST /api/v1/auth/otp/request` with rate-limiting (3 requests per 10 mins per mobile via Redis) and 5-min TTL.
+  - `POST /api/v1/auth/otp/verify` issuing 24h JWT + 7d Refresh token and upserting user in PostgreSQL.
+  - Pre-seeded reviewer account bypass (`9000000001` with `demo1234` / `123456`) per Master Spec Section 11.
+  - `POST /api/v1/auth/token/refresh` for rotating JWT tokens.
+  - `JwtAuthGuard` and `JwtStrategy` for route security.
+- **DPDP Compliance & Log Sanitization**:
+  - `SanitizeLogsInterceptor` (`backend/src/common/interceptors/sanitize-logs.interceptor.ts`) applied globally to sanitize logs and HTTP responses, masking mobile numbers (e.g. `9876543210` $\to$ `98XXXX3210`) and scrubbing JWT tokens.
+- **Unit Tests**:
+  - 14 tests across `auth.service.spec.ts` and `sanitize-logs.interceptor.spec.ts` verifying OTP rate limits, reviewer auth, and recursive phone/token masking.
+
+## [0.1.0] - Milestone 0 (M0: Foundation, Architecture & Contracts)
 
 ### Added
 - Comprehensive architecture specification (`docs/ARCHITECTURE.md`) covering server-authoritative queue engine, multi-tier realtime fallback (WebSocket $\to$ SSE $\to$ adaptive polling), low-end Android audio alarm notifications, bilingual TTS (`hi` + `en`), and DPDP Act 2023 compliance.

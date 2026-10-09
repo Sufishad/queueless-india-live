@@ -112,7 +112,7 @@ model Branch {
   queueSettings QueueSettings?
   reviews       Review[]
 
-  @@index([city, categoryIndex: status])
+  @@index([city, status])
   @@index([lat, lng])
   @@map("branches")
 }
