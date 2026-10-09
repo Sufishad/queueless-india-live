@@ -6,7 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Milestone 1 (M1: Backend Core & Realtime) [In-Progress]
+## [Unreleased] - Milestone 2 (M2: Flutter Mobile App — Foundation, Design System & Customer Flow)
+
+### Added
+- **Design System & Theme (`apps/mobile/lib/core/theme/`)**:
+  - Dark Theme palette: Base `#0B0F19`, Panel `#121A2B`, Card `#162032`, Electric Orange `#F97316` (primary), Emerald `#10B981` (live/success), Alert `#EF4444`.
+  - Typography: Bricolage Grotesque (headings), Manrope (body), JetBrains Mono (high-contrast token numbers and telemetry).
+- **Core Infrastructure (`apps/mobile/lib/core/`)**:
+  - Dio network client with `AuthInterceptor` (automatic JWT bearer attachment, 401 token refresh handling, and UUID `Idempotency-Key` headers).
+  - Secure storage wrapper (`FlutterSecureStorage` with Android encrypted shared preferences).
+  - Socket.IO realtime client (`SocketService`) with room subscriptions (`branch:subscribe`), reconnect recovery, and event streams (`queue:update`, `token:called`, `token:status`, `queue:paused`, `queue:resumed`).
+  - Riverpod `BranchLiveQueueNotifier` for active branch live state.
+- **Authentication Feature (`apps/mobile/lib/features/auth/`)**:
+  - Mobile OTP login screen with +91 validation, 6-digit PIN verification, and Play Store Reviewer account bypass shortcut (`9000000001` / `123456`).
+- **Customer Discovery & Join Flow (`apps/mobile/lib/features/customer/`)**:
+  - Discovery Screen with live search bar, launch city chips (Bengaluru, Mumbai, Delhi, Pune), category chips, and live queue telemetry cards.
+  - Branch Card widget displaying Now Serving #, Waiting, and Est. Wait in JetBrains Mono with live pulsing indicators.
+  - Join Queue bottom sheet with service selector, customer name input, senior citizen priority toggle, and idempotency protection.
+  - **TokenTicketWidget**: Hero perforated digital ticket with custom notch clipper, dashed perforation line, glowing JetBrains Mono token number (#), live wait telemetry, QR code stub, and 4-step progress tracker (`WAITING` -> `CALLED` -> `IN SERVICE` -> `COMPLETED`).
+
+## [0.2.0] - Milestone 1 (M1: Backend Core & Realtime)
 
 ### Added
 - **Prisma & Redis Infrastructure**:

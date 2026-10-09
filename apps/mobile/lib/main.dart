@@ -1,43 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/theme/app_theme.dart';
+import 'features/auth/providers/auth_notifier.dart';
+import 'features/auth/screens/otp_login_screen.dart';
+import 'features/customer/screens/discovery_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const QueueLessApp());
+  runApp(
+    const ProviderScope(
+      child: QueueLessApp(),
+    ),
+  );
 }
 
-class QueueLessApp extends StatelessWidget {
+class QueueLessApp extends ConsumerWidget {
   const QueueLessApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
+
     return MaterialApp(
       title: 'QueueLess India',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0B0F19),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFF97316), // Electric Orange
-          secondary: Color(0xFF10B981), // Emerald
-          surface: Color(0xFF131926),
-          error: Color(0xFFEF4444),
-          onPrimary: Color(0xFFF8FAFC),
-          onSurface: Color(0xFFF8FAFC),
-        ),
-      ),
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'QueueLess India\n"Line mein nahi, time par"',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFFF8FAFC),
+      theme: AppTheme.darkTheme,
+      home: authState.isAuthenticated
+          ? const DiscoveryScreen()
+          : OtpLoginScreen(
+              onAuthenticated: () {},
             ),
-          ),
-        ),
-      ),
     );
   }
 }
