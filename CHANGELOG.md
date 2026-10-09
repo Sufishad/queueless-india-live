@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - Milestone 2 (M2: Flutter Mobile App — Foundation, Design System & Customer Flow)
 
+### Fixed
+- **I18n Extraction**: Externalized all customer UI strings into ARB localization bundles (`app_en.arb`, `app_hi.arb`, `app_mr.arb`) with complete Hindi and Marathi translations and generated typed `AppLocalizations`.
+- **Accessibility**: Added screen-reader `Semantics` with `liveRegion: true` on ticket status announcements and descriptive token number/step progress announcements.
+- **Deprecation Cleanup**: Migrated all Flutter color `.withOpacity()` calls to `.withValues(alpha:)` and converted widget constructors to `super.key`.
+
 ### Added
 - **Design System & Theme (`apps/mobile/lib/core/theme/`)**:
   - Dark Theme palette: Base `#0B0F19`, Panel `#121A2B`, Card `#162032`, Electric Orange `#F97316` (primary), Emerald `#10B981` (live/success), Alert `#EF4444`.

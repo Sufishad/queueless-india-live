@@ -10,7 +10,7 @@ import '../widgets/join_queue_sheet.dart';
 import '../widgets/token_ticket_widget.dart';
 
 class DiscoveryScreen extends ConsumerStatefulWidget {
-  const DiscoveryScreen({Key? key}) : super(key: key);
+  const DiscoveryScreen({super.key});
 
   @override
   ConsumerState<DiscoveryScreen> createState() => _DiscoveryScreenState();

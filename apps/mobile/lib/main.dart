@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/providers/auth_notifier.dart';
 import 'features/auth/screens/otp_login_screen.dart';
 import 'features/customer/screens/discovery_screen.dart';
+import 'l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +27,13 @@ class QueueLessApp extends ConsumerWidget {
       title: 'QueueLess India',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: authState.isAuthenticated
           ? const DiscoveryScreen()
           : OtpLoginScreen(

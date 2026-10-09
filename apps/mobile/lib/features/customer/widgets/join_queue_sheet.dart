@@ -11,10 +11,10 @@ class JoinQueueSheet extends ConsumerStatefulWidget {
   final Function(QueueTokenModel token) onTokenIssued;
 
   const JoinQueueSheet({
-    Key? key,
+    super.key,
     required this.branch,
     required this.onTokenIssued,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<JoinQueueSheet> createState() => _JoinQueueSheetState();

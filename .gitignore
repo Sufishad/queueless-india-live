@@ -32,6 +32,7 @@ node_modules/
 dist/
 build/
 .npm/
+.curator_backups/
 
 # Environment Variables
 .env

@@ -1,0 +1,49 @@
+{
+  "@@locale": "en",
+  "appName": "QueueLess India",
+  "tagline": "Line mein nahi, time par",
+  "tokenNumber": "TOKEN NUMBER",
+  "proceedTo": "PROCEED TO: {counter}",
+  "@proceedTo": {
+    "placeholders": {
+      "counter": { "type": "String" }
+    }
+  },
+  "leave": "Leave",
+  "positionLabel": "POSITION",
+  "estWaitLabel": "EST. WAIT",
+  "counterLabel": "COUNTER",
+  "waiting": "Waiting",
+  "called": "Called",
+  "inService": "In Service",
+  "completed": "Completed",
+  "statusWaiting": "WAITING",
+  "statusCalled": "CALLED NOW",
+  "statusInService": "IN SERVICE",
+  "statusCompleted": "COMPLETED",
+  "statusCancelled": "CANCELLED",
+  "semanticsTokenNumber": "Token number {number}",
+  "@semanticsTokenNumber": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "semanticsCalledAnnouncement": "Called, proceed to counter {counter}",
+  "@semanticsCalledAnnouncement": {
+    "placeholders": {
+      "counter": { "type": "String" }
+    }
+  },
+  "semanticsWaitingStep": "Step 1 of 4: Waiting",
+  "semanticsCalledStep": "Step 2 of 4: Called",
+  "semanticsInServiceStep": "Step 3 of 4: In Service",
+  "semanticsCompletedStep": "Step 4 of 4: Completed",
+  "selectService": "SELECT SERVICE",
+  "yourName": "Your Name",
+  "getToken": "Get Token",
+  "joinLiveQueue": "Join Live Queue",
+  "nowServing": "NOW SERVING",
+  "live": "LIVE",
+  "offline": "OFFLINE",
+  "close": "Close"
+}

@@ -8,8 +8,7 @@ import '../providers/auth_state.dart';
 class OtpLoginScreen extends ConsumerStatefulWidget {
   final VoidCallback onAuthenticated;
 
-  const OtpLoginScreen({Key? key, required this.onAuthenticated})
-      : super(key: key);
+  const OtpLoginScreen({super.key, required this.onAuthenticated});
 
   @override
   ConsumerState<OtpLoginScreen> createState() => _OtpLoginScreenState();
@@ -216,9 +215,9 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.alert.withOpacity(0.15),
+                    color: AppColors.alert.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.alert.withOpacity(0.5)),
+                    border: Border.all(color: AppColors.alert.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     children: [

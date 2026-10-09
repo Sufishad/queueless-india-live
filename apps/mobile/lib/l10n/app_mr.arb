@@ -1,0 +1,49 @@
+{
+  "@@locale": "mr",
+  "appName": "कतारमुक्त भारत (QueueLess India)",
+  "tagline": "रांगेत नाही, वेळेवर",
+  "tokenNumber": "टोकन क्रमांक",
+  "proceedTo": "काउंटर {counter} कडे जा",
+  "@proceedTo": {
+    "placeholders": {
+      "counter": { "type": "String" }
+    }
+  },
+  "leave": "रांग सोडा",
+  "positionLabel": "क्रमांक स्थान",
+  "estWaitLabel": "अंदाजे वेळ",
+  "counterLabel": "काउंटर",
+  "waiting": "प्रतीक्षा",
+  "called": "बोलावले",
+  "inService": "सेवेमध्ये",
+  "completed": "पूर्ण",
+  "statusWaiting": "प्रतीक्षेत",
+  "statusCalled": "आत्ताच बोलावले आहे",
+  "statusInService": "सेवा सुरू आहे",
+  "statusCompleted": "पूर्ण झाले",
+  "statusCancelled": "रद्द केले",
+  "semanticsTokenNumber": "टोकन क्रमांक {number}",
+  "@semanticsTokenNumber": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "semanticsCalledAnnouncement": "बोलावले आहे, काउंटर {counter} कडे जा",
+  "@semanticsCalledAnnouncement": {
+    "placeholders": {
+      "counter": { "type": "String" }
+    }
+  },
+  "semanticsWaitingStep": "टप्पा 1 / 4: प्रतीक्षा",
+  "semanticsCalledStep": "टप्पा 2 / 4: बोलावले आहे",
+  "semanticsInServiceStep": "टप्पा 3 / 4: सेवा सुरू आहे",
+  "semanticsCompletedStep": "टप्पा 4 / 4: पूर्ण झाले",
+  "selectService": "सेवा निवडा",
+  "yourName": "तुमचे नाव",
+  "getToken": "टोकन मिळवा",
+  "joinLiveQueue": "थेट रांगेत सहभागी व्हा",
+  "nowServing": "सध्या सुरू असलेला टोकन",
+  "live": "थेट (Live)",
+  "offline": "ऑफलाईन",
+  "close": "बंद करा"
+}

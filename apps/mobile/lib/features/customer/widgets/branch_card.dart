@@ -8,10 +8,10 @@ class BranchCard extends StatelessWidget {
   final VoidCallback onJoinQueue;
 
   const BranchCard({
-    Key? key,
+    super.key,
     required this.branch,
     required this.onJoinQueue,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

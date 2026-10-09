@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/queue_token_model.dart';
 
 /// Custom Ticket Clipper creating authentic perforated ticket notches
@@ -99,10 +100,10 @@ class TokenTicketWidget extends StatelessWidget {
   final VoidCallback? onLeaveQueue;
 
   const TokenTicketWidget({
-    Key? key,
+    super.key,
     required this.token,
     this.onLeaveQueue,
-  }) : super(key: key);
+  });
 
   int _getStepIndex(CustomerTokenStatus status) {
     switch (status) {
@@ -121,6 +122,7 @@ class TokenTicketWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final currentStep = _getStepIndex(token.status);
     final isCalled = token.status == CustomerTokenStatus.called;
 
@@ -132,8 +134,8 @@ class TokenTicketWidget extends StatelessWidget {
           // Electric Orange or Emerald glow around ticket when called
           BoxShadow(
             color: isCalled
-                ? AppColors.success.withOpacity(0.25)
-                : AppColors.primary.withOpacity(0.15),
+                ? AppColors.success.withValues(alpha: 0.25)
+                : AppColors.primary.withValues(alpha: 0.15),
             blurRadius: isCalled ? 32 : 20,
             spreadRadius: isCalled ? 3 : 0,
             offset: const Offset(0, 8),
@@ -177,54 +179,62 @@ class TokenTicketWidget extends StatelessWidget {
                             ],
                           ),
                         ),
-                        _buildStatusBadge(token.status),
+                        _buildStatusBadge(token.status, l10n),
                       ],
                     ),
 
                     const SizedBox(height: 24),
 
-                    // Big Token Hero Display (JetBrains Mono)
+                    // Big Token Hero Display with Accessibility Semantics
                     Text(
-                      'TOKEN NUMBER',
+                      l10n.tokenNumber,
                       style: AppTypography.telemetryLabel.copyWith(
                         letterSpacing: 2.0,
                         color: AppColors.textMuted,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(
-                        '#${token.number}',
-                        style: AppTypography.tokenHeroNumber.copyWith(
-                          fontSize: 76,
-                          color: isCalled ? AppColors.success : AppColors.primary,
-                          shadows: [
-                            Shadow(
-                              color: isCalled
-                                  ? AppColors.success.withOpacity(0.6)
-                                  : AppColors.primary.withOpacity(0.4),
-                              blurRadius: 20,
-                            ),
-                          ],
+                    Semantics(
+                      label: l10n.semanticsTokenNumber(token.number),
+                      header: true,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          '#${token.number}',
+                          style: AppTypography.tokenHeroNumber.copyWith(
+                            fontSize: 76,
+                            color: isCalled ? AppColors.success : AppColors.primary,
+                            shadows: [
+                              Shadow(
+                                color: isCalled
+                                    ? AppColors.success.withValues(alpha: 0.6)
+                                    : AppColors.primary.withValues(alpha: 0.4),
+                                blurRadius: 20,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
 
                     if (token.calledCounterLabel != null) ...[
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.successGlow,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.success),
-                        ),
-                        child: Text(
-                          'PROCEED TO: ${token.calledCounterLabel!.toUpperCase()}',
-                          style: AppTypography.telemetryValue.copyWith(
-                            color: AppColors.success,
-                            fontSize: 13,
+                      Semantics(
+                        liveRegion: true,
+                        label: l10n.semanticsCalledAnnouncement(token.calledCounterLabel!),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.successGlow,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.success),
+                          ),
+                          child: Text(
+                            l10n.proceedTo(token.calledCounterLabel!.toUpperCase()),
+                            style: AppTypography.telemetryValue.copyWith(
+                              color: AppColors.success,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
@@ -244,14 +254,14 @@ class TokenTicketWidget extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _buildTelemetryItem(
-                            label: 'POSITION',
+                            label: l10n.positionLabel,
                             value: token.status == CustomerTokenStatus.waiting
                                 ? '${token.positionInQueue}'
                                 : '-',
                           ),
                           Container(width: 1, height: 28, color: AppColors.cardBorder),
                           _buildTelemetryItem(
-                            label: 'EST. WAIT',
+                            label: l10n.estWaitLabel,
                             value: token.status == CustomerTokenStatus.waiting
                                 ? '~${token.estWaitMin}m'
                                 : 'Now',
@@ -259,7 +269,7 @@ class TokenTicketWidget extends StatelessWidget {
                           ),
                           Container(width: 1, height: 28, color: AppColors.cardBorder),
                           _buildTelemetryItem(
-                            label: 'COUNTER',
+                            label: l10n.counterLabel,
                             value: token.calledCounterLabel ?? 'Waiting',
                           ),
                         ],
@@ -269,7 +279,7 @@ class TokenTicketWidget extends StatelessWidget {
                     const SizedBox(height: 28),
 
                     // 4-Step Progress Tracker: WAITING -> CALLED -> IN SERVICE -> COMPLETED
-                    _buildStepProgressTracker(currentStep),
+                    _buildStepProgressTracker(currentStep, l10n),
                   ],
                 ),
               ),
@@ -305,12 +315,12 @@ class TokenTicketWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'QueueLess India',
+                            l10n.appName,
                             style: AppTypography.headingMedium.copyWith(fontSize: 14),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Line mein nahi, time par',
+                            l10n.tagline,
                             style: AppTypography.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                               fontSize: 11,
@@ -333,7 +343,7 @@ class TokenTicketWidget extends StatelessWidget {
                       TextButton(
                         onPressed: onLeaveQueue,
                         child: Text(
-                          'Leave',
+                          l10n.leave,
                           style: AppTypography.bodySmall.copyWith(
                             color: AppColors.alert,
                             fontWeight: FontWeight.w700,
@@ -350,46 +360,50 @@ class TokenTicketWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(CustomerTokenStatus status) {
+  Widget _buildStatusBadge(CustomerTokenStatus status, AppLocalizations l10n) {
     Color color;
     String label;
 
     switch (status) {
       case CustomerTokenStatus.waiting:
         color = AppColors.warning;
-        label = 'WAITING';
+        label = l10n.statusWaiting;
         break;
       case CustomerTokenStatus.called:
         color = AppColors.success;
-        label = 'CALLED NOW';
+        label = l10n.statusCalled;
         break;
       case CustomerTokenStatus.inService:
         color = AppColors.primary;
-        label = 'IN SERVICE';
+        label = l10n.statusInService;
         break;
       case CustomerTokenStatus.completed:
         color = AppColors.textMuted;
-        label = 'COMPLETED';
+        label = l10n.statusCompleted;
         break;
       case CustomerTokenStatus.cancelled:
         color = AppColors.alert;
-        label = 'CANCELLED';
+        label = l10n.statusCancelled;
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.6)),
-      ),
-      child: Text(
-        label,
-        style: AppTypography.telemetryLabel.copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
-          fontSize: 11,
+    return Semantics(
+      liveRegion: true,
+      label: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.6)),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.telemetryLabel.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+            fontSize: 11,
+          ),
         ),
       ),
     );
@@ -418,8 +432,20 @@ class TokenTicketWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStepProgressTracker(int currentStep) {
-    final steps = ['Waiting', 'Called', 'In Service', 'Completed'];
+  Widget _buildStepProgressTracker(int currentStep, AppLocalizations l10n) {
+    final steps = [
+      l10n.waiting,
+      l10n.called,
+      l10n.inService,
+      l10n.completed,
+    ];
+
+    final semanticsStepLabels = [
+      l10n.semanticsWaitingStep,
+      l10n.semanticsCalledStep,
+      l10n.semanticsInServiceStep,
+      l10n.semanticsCompletedStep,
+    ];
 
     return Column(
       children: [
@@ -462,15 +488,18 @@ class TokenTicketWidget extends StatelessWidget {
               );
             }
 
-            return Container(
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: circleColor,
-                border: Border.all(color: borderColor, width: 2),
+            return Semantics(
+              label: semanticsStepLabels[stepIndex],
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: circleColor,
+                  border: Border.all(color: borderColor, width: 2),
+                ),
+                child: Center(child: child),
               ),
-              child: Center(child: child),
             );
           }),
         ),
