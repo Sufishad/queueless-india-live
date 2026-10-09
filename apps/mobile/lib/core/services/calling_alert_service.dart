@@ -7,14 +7,16 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../storage/secure_storage_service.dart';
+import 'live_foreground_service.dart';
 
 /// CallingAlertService
 /// Critical path notification & audio alert pipeline for QueueLess India:
 /// 1. Android Notification Channel with USAGE_ALARM to pierce silent/DND where OS permits
-/// 2. Active token foreground service keeping Socket.IO connection alive with live telemetry
+/// 2. Active token genuine Android ForegroundService keeping Socket.IO connection alive with live telemetry
 /// 3. Full-screen intent alert + audio chime on `token:called`
 /// 4. Sequential bilingual TTS (hi-IN first, then en-IN) respecting branch voice flags
-/// 5. OEM autostart guidance for Xiaomi (MIUI) and OPPO/Realme (ColorOS)
+/// 5. Notification tap routing directly to the ticket view
+/// 6. Strict validation: Never allows tokenNumber <= 0 to trigger calling alarm
 class CallingAlertService {
   static final CallingAlertService _instance = CallingAlertService._internal();
   factory CallingAlertService() => _instance;
@@ -31,19 +33,30 @@ class CallingAlertService {
   static const int foregroundNotificationId = 1001;
   static const int callAlertNotificationId = 2002;
 
+  /// Global navigator key for notification tap routing
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  /// Notification tap callback handler
+  static void Function(String? payload)? onNotificationNavigate;
+
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final FlutterTts _flutterTts = FlutterTts();
   final AudioPlayer _audioPlayer = AudioPlayer();
   final SecureStorageService _storage = SecureStorageService();
+  final LiveForegroundService _foregroundService = LiveForegroundService();
 
   bool _isInitialized = false;
-  bool _isForegroundServiceActive = false;
 
   /// Stream controller for in-app full-screen alert dialogs
   final StreamController<Map<String, dynamic>> _callAlertStreamController =
       StreamController<Map<String, dynamic>>.broadcast();
   Stream<Map<String, dynamic>> get onCallAlert => _callAlertStreamController.stream;
+
+  /// Stream controller for notification navigation events
+  final StreamController<String> _notificationNavigationController =
+      StreamController<String>.broadcast();
+  Stream<String> get onNotificationTapRoute => _notificationNavigationController.stream;
 
   /// Initialize local notification channels & TTS engine
   Future<void> initialize() async {
@@ -64,8 +77,15 @@ class CallingAlertService {
 
     await _localNotifications.initialize(
       initSettings,
-      onDidReceiveNotificationResponse: (response) {
-        debugPrint('[CallingAlertService] Notification clicked: ${response.payload}');
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        debugPrint('[CallingAlertService] Notification clicked with payload: ${response.payload}');
+        final payload = response.payload;
+        if (payload != null && payload.isNotEmpty) {
+          _notificationNavigationController.add(payload);
+          if (onNotificationNavigate != null) {
+            onNotificationNavigate!(payload);
+          }
+        }
       },
     );
 
@@ -98,11 +118,14 @@ class CallingAlertService {
       await androidPlugin.createNotificationChannel(androidForegroundChannel);
     }
 
-    // 2. Configure TTS
+    // 2. Initialize genuine Android Foreground Service
+    await _foregroundService.initialize();
+
+    // 3. Configure TTS
     await _configureTts();
 
     _isInitialized = true;
-    debugPrint('[CallingAlertService] Initialized with USAGE_ALARM channel');
+    debugPrint('[CallingAlertService] Initialized with USAGE_ALARM channel & ForegroundService');
   }
 
   Future<void> _configureTts() async {
@@ -122,7 +145,17 @@ class CallingAlertService {
     final eventType = message.data['type'];
 
     if (eventType == 'token:called') {
-      final tokenNumber = int.tryParse(message.data['token_number']?.toString() ?? '') ?? 0;
+      final tokenRaw = message.data['token_number'];
+      final tokenNumber = int.tryParse(tokenRaw?.toString() ?? '');
+
+      // CRITICAL FIX: Reject token_number <= 0 or unparseable. Never allow tokenNumber=0 to trigger alarm.
+      if (tokenNumber == null || tokenNumber <= 0) {
+        debugPrint(
+          '[CallingAlertService] P1 GUARD: Received invalid token_number ($tokenRaw). Ignoring calling alert.',
+        );
+        return;
+      }
+
       final counterName = message.data['counter_name']?.toString() ?? '1';
       final voiceHi = message.data['voice_hi']?.toString() != 'false';
       final voiceEn = message.data['voice_en']?.toString() != 'false';
@@ -134,7 +167,14 @@ class CallingAlertService {
         voiceEn: voiceEn,
       );
     } else if (eventType == 'queue:ahead_update') {
-      final tokenNumber = int.tryParse(message.data['token_number']?.toString() ?? '') ?? 0;
+      final tokenRaw = message.data['token_number'];
+      final tokenNumber = int.tryParse(tokenRaw?.toString() ?? '');
+      if (tokenNumber == null || tokenNumber <= 0) {
+        debugPrint(
+          '[CallingAlertService] P1 GUARD: Received invalid token_number ($tokenRaw) for ahead_update. Ignoring.',
+        );
+        return;
+      }
       final aheadCount = int.tryParse(message.data['ahead_count']?.toString() ?? '') ?? 0;
       await updateActiveTokenForeground(
         tokenNumber: tokenNumber,
@@ -143,69 +183,38 @@ class CallingAlertService {
     }
   }
 
-  /// Start foreground service persistent notification while user has an active token
+  /// Start genuine Android foreground service while user has an active token
   Future<void> startActiveTokenForeground({
     required int tokenNumber,
     required int aheadCount,
   }) async {
-    _isForegroundServiceActive = true;
-    final bodyText = 'QueueLess live — you are #$tokenNumber, $aheadCount ahead';
-
-    final androidDetails = AndroidNotificationDetails(
-      foregroundChannelId,
-      foregroundChannelName,
-      importance: Importance.low,
-      priority: Priority.low,
-      ongoing: true,
-      autoCancel: false,
-      showWhen: true,
-      category: AndroidNotificationCategory.service,
+    if (tokenNumber <= 0) {
+      debugPrint('[CallingAlertService] Cannot start foreground service with tokenNumber <= 0');
+      return;
+    }
+    await _foregroundService.startActiveTracking(
+      tokenNumber: tokenNumber,
+      aheadCount: aheadCount,
     );
-
-    await _localNotifications.show(
-      foregroundNotificationId,
-      'QueueLess Live Tracker',
-      bodyText,
-      NotificationDetails(android: androidDetails),
-    );
-    debugPrint('[CallingAlertService] Started foreground tracking: $bodyText');
   }
 
-  /// Update telemetry on existing foreground service notification
+  /// Update telemetry on existing foreground service
   Future<void> updateActiveTokenForeground({
     required int tokenNumber,
     required int aheadCount,
   }) async {
-    if (!_isForegroundServiceActive) {
-      await startActiveTokenForeground(tokenNumber: tokenNumber, aheadCount: aheadCount);
-      return;
-    }
-
-    final bodyText = 'QueueLess live — you are #$tokenNumber, $aheadCount ahead';
-    final androidDetails = AndroidNotificationDetails(
-      foregroundChannelId,
-      foregroundChannelName,
-      importance: Importance.low,
-      priority: Priority.low,
-      ongoing: true,
-      autoCancel: false,
-      showWhen: true,
-      category: AndroidNotificationCategory.service,
-    );
-
-    await _localNotifications.show(
-      foregroundNotificationId,
-      'QueueLess Live Tracker',
-      bodyText,
-      NotificationDetails(android: androidDetails),
+    if (tokenNumber <= 0) return;
+    _foregroundService.updateTelemetry(
+      tokenNumber: tokenNumber,
+      aheadCount: aheadCount,
     );
   }
 
-  /// Stop foreground notification once token is in service or completed
+  /// Stop foreground service once token is in service or completed
   Future<void> stopActiveTokenForeground() async {
-    _isForegroundServiceActive = false;
+    _foregroundService.stopTracking();
     await _localNotifications.cancel(foregroundNotificationId);
-    debugPrint('[CallingAlertService] Stopped foreground service notification');
+    debugPrint('[CallingAlertService] Stopped foreground service');
   }
 
   /// Trigger calling alarm pipeline on `token:called`:
@@ -219,6 +228,11 @@ class CallingAlertService {
     bool voiceHi = true,
     bool voiceEn = true,
   }) async {
+    // P1 GUARD: Never allow tokenNumber <= 0 to trigger alarm
+    if (tokenNumber <= 0) {
+      debugPrint('[CallingAlertService] Refused to trigger calling alarm: tokenNumber=$tokenNumber <= 0');
+      return;
+    }
     debugPrint(
       '[CallingAlertService] TRIGGER CALLING ALARM: Token #$tokenNumber at Counter $counterName',
     );
@@ -345,6 +359,7 @@ class CallingAlertService {
 
   void dispose() {
     _callAlertStreamController.close();
+    _notificationNavigationController.close();
     _audioPlayer.dispose();
     _flutterTts.stop();
   }

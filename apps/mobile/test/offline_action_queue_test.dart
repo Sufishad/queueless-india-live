@@ -59,7 +59,7 @@ void main() {
     setUp(() async {
       service = OfflineActionQueueService();
       mockBox = MockHiveBox();
-      await service.initialize(injectedBox: mockBox);
+      await service.initialize(injectedBox: mockBox, listenConnectivity: false);
     });
 
     test('enqueued actions are stored with unique idempotencyKey and timestamps', () async {

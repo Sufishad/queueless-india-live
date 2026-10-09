@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - Milestone 2 (M2: Flutter Mobile App — Foundation, Design System & Customer Flow)
 
+### Fixed (Critical Production Blockers)
+- **AndroidManifest.xml**: Added runtime & foreground service permissions (`POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`, `USE_FULL_SCREEN_INTENT`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`) and declared Android `dataSync` ForegroundService.
+- **Genuine Android Foreground Service**: Integrated `flutter_background_service` in `LiveForegroundService` with notification channel `queueless_foreground_live_service` to prevent MIUI/ColorOS background termination.
+- **Token Number 0 Guard**: Enforced strict validation in `CallingAlertService` (`tokenNumber <= 0` early return/rejection) preventing spurious 0-token alarms.
+- **Hive AES-256 Box Encryption**: Protected offline actions Hive storage with 256-bit AES cipher key managed in `SecureStorageService` / Android Keystore for DPDP Act 2023 compliance.
+- **Notification Tap Handler**: Added notification payload router stream in `CallingAlertService` directing users straight to active token screen on tap.
+- **Connectivity Auto-Replay**: Hooked `connectivity_plus` stream in `OfflineActionQueueService` to trigger automatic replay of offline merchant mutations on network restoration.
+
 ### Fixed
 - **I18n Extraction**: Externalized all customer UI strings into ARB localization bundles (`app_en.arb`, `app_hi.arb`, `app_mr.arb`) with complete Hindi and Marathi translations and generated typed `AppLocalizations`.
 - **Accessibility**: Added screen-reader `Semantics` with `liveRegion: true` on ticket status announcements and descriptive token number/step progress announcements.

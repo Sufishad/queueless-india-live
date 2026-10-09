@@ -160,3 +160,19 @@ All foundational architectural decisions are logged here with context, alternati
 - **Trade-offs:**
   - Native offline TTS requires zero telephony or audio streaming bandwidth.
   - Aggressive Android skins (MIUI, ColorOS) require user autostart guidance dialog.
+
+---
+
+## ADR-011: Production Android Foreground Service, DPDP Hive AES-256 Box Encryption & Network Auto-Replay
+
+- **Status:** Accepted (M2 Fixes)
+- **Context:**
+  Aggressive battery optimization on Android 13/14 and OEM skins (MIUI/ColorOS) kill background apps within 2 minutes. Furthermore, offline mutation payloads containing user tokens or names stored in plain text breach DPDP Act 2023 regulations.
+- **Decision:**
+  - Implement a genuine Android Foreground Service (`flutter_background_service`) declared with `android:foregroundServiceType="dataSync"` and explicit permissions (`POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`, `USE_FULL_SCREEN_INTENT`, `WAKE_LOCK`).
+  - Secure the Hive offline queue (`offline_merchant_actions`) with 256-bit AES cipher key generated via `Hive.generateSecureKey()` and persisted in Android Keystore / `FlutterSecureStorage`.
+  - Wire `connectivity_plus` to automatically trigger `replayPendingActions()` when network transitions from offline to online.
+  - Hard guard: Reject `token_number <= 0` at FCM parse level to eliminate token 0 phantom alerts.
+  - Wire `onDidReceiveNotificationResponse` to broadcast routing events for seamless notification-to-token navigation.
+- **Trade-offs:**
+  - Prevents OEM task termination while maintaining strict DPDP compliance and zero manual retry effort for merchants.

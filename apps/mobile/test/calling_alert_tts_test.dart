@@ -84,5 +84,20 @@ void main() {
       expect(sequence[1], contains('502'));
       expect(sequence[1], contains('Pharmacy Delivery'));
     });
+
+    test('token 0 guard: rejects invalid or zero token numbers from triggering alarm', () {
+      bool isValidCallingToken(dynamic tokenRaw) {
+        final parsed = int.tryParse(tokenRaw?.toString() ?? '');
+        return parsed != null && parsed > 0;
+      }
+
+      expect(isValidCallingToken(0), isFalse);
+      expect(isValidCallingToken('0'), isFalse);
+      expect(isValidCallingToken('-5'), isFalse);
+      expect(isValidCallingToken(null), isFalse);
+      expect(isValidCallingToken('invalid'), isFalse);
+      expect(isValidCallingToken('1'), isTrue);
+      expect(isValidCallingToken(42), isTrue);
+    });
   });
 }

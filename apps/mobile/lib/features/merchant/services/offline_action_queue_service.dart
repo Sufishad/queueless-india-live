@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:dio/dio.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/storage/secure_storage_service.dart';
 import '../models/queued_action_model.dart';
 
 /// Type definition for the HTTP executor callback (supports dependency injection for unit tests)
@@ -17,12 +20,15 @@ typedef ActionHttpExecutor = Future<Response> Function(
 /// OfflineActionQueueService
 /// Manages merchant actions created during 2G/3G network drops or offline store operations.
 /// Guarantees:
-/// 1. Persistent storage in Hive box `offline_merchant_actions`
+/// 1. Persistent DPDP-compliant encrypted storage in Hive box `offline_merchant_actions` (AES-256)
 /// 2. Strict FIFO execution order (oldest `createdAt` first)
 /// 3. Concurrency lock: Replay runs sequentially and NEVER double-replays
 /// 4. Idempotency protection: Server rejects or safely deduplicates identical keys
+/// 5. Auto-replay: Listens to connectivity_plus and triggers replay on network restore
 class OfflineActionQueueService {
   static const String boxName = 'offline_merchant_actions';
+  static const String cipherKeyStorageKey = 'hive_offline_actions_cipher_key';
+
   static final OfflineActionQueueService _instance =
       OfflineActionQueueService._internal();
 
@@ -32,6 +38,8 @@ class OfflineActionQueueService {
   Box<String>? _box;
   bool _isReplaying = false;
   final _uuid = const Uuid();
+  final SecureStorageService _secureStorage = SecureStorageService();
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   final StreamController<int> _pendingCountController =
       StreamController<int>.broadcast();
@@ -40,14 +48,48 @@ class OfflineActionQueueService {
   /// Custom executor hook (used in unit tests to mock network without Dio)
   ActionHttpExecutor? customExecutor;
 
-  /// Initialize Hive box
-  Future<void> initialize({Box<String>? injectedBox}) async {
+  /// Initialize encrypted Hive box and auto-replay connectivity listener
+  Future<void> initialize({Box<String>? injectedBox, bool listenConnectivity = true}) async {
     if (injectedBox != null) {
       _box = injectedBox;
     } else if (_box == null || !_box!.isOpen) {
-      _box = await Hive.openBox<String>(boxName);
+      // DPDP Act 2023 compliance: Retrieve or generate 256-bit AES key from FlutterSecureStorage
+      List<int> cipherKey;
+      try {
+        final storedKey = await _secureStorage.read(cipherKeyStorageKey);
+        if (storedKey != null && storedKey.isNotEmpty) {
+          cipherKey = base64Decode(storedKey);
+        } else {
+          cipherKey = Hive.generateSecureKey();
+          await _secureStorage.write(cipherKeyStorageKey, base64Encode(cipherKey));
+        }
+      } catch (e) {
+        debugPrint('[OfflineQueue] Secure storage fallback for key: $e');
+        cipherKey = Hive.generateSecureKey();
+      }
+
+      _box = await Hive.openBox<String>(
+        boxName,
+        encryptionCipher: HiveAesCipher(cipherKey),
+      );
     }
+
+    if (listenConnectivity) {
+      _setupConnectivityListener();
+    }
+
     _notifyCount();
+  }
+
+  void _setupConnectivityListener() {
+    _connectivitySubscription?.cancel();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) {
+      final isOnline = results.any((r) => r != ConnectivityResult.none);
+      if (isOnline && pendingCount > 0 && !_isReplaying) {
+        debugPrint('[OfflineQueue] Network restored ($results). Triggering auto-replay...');
+        replayPendingActions();
+      }
+    });
   }
 
   Box<String> get _activeBox {
@@ -226,6 +268,7 @@ class OfflineActionQueueService {
   }
 
   void dispose() {
+    _connectivitySubscription?.cancel();
     _pendingCountController.close();
   }
 }
