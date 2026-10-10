@@ -10,12 +10,15 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 RUN npm ci --legacy-peer-deps
-RUN npx --no-install prisma generate
+RUN npx prisma generate
 
 COPY tsconfig*.json ./
 COPY src ./src/
 
 RUN npm run build
+
+# Remove development dependencies, retaining production packages and generated Prisma client
+RUN npm prune --production
 
 # --- STAGE 2: Production Runner ---
 FROM node:20-alpine AS runner
@@ -29,10 +32,7 @@ ENV PORT=3000
 
 COPY package*.json ./
 COPY prisma ./prisma/
-
-RUN npm ci --only=production --legacy-peer-deps
-RUN npx --no-install prisma generate
-
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
