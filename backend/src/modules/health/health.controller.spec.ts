@@ -22,6 +22,7 @@ describe('HealthController', () => {
     res.setHeader = jest.fn().mockReturnValue(res);
     res.set = jest.fn().mockReturnValue(res);
     res.send = jest.fn().mockReturnValue(res);
+    res.end = jest.fn().mockReturnValue(res);
     return res as Response;
   };
 
@@ -58,6 +59,20 @@ describe('HealthController', () => {
     await controller.getHealth(res);
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'ok' }));
+  });
+
+  it('should return 200 and API info on GET /', () => {
+    const res = createMockRes();
+    controller.getRoot(res);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ name: 'QueueLess India API', status: 'ok' }));
+  });
+
+  it('should return 200 on HEAD /', () => {
+    const res = createMockRes();
+    controller.headRoot(res);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.end).toHaveBeenCalled();
   });
 
   it('should return 200 readiness status on /readyz', async () => {

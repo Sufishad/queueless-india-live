@@ -1,4 +1,4 @@
-import { Controller, Get, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Head, Res, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 import { HealthService } from './health.service';
 import { MetricsService } from './metrics.service';
@@ -9,6 +9,29 @@ export class HealthController {
     private readonly healthService: HealthService,
     private readonly metricsService: MetricsService,
   ) {}
+
+  /**
+   * GET /
+   * Root endpoint for cloud load balancers & uptime monitors (Render, AWS, Cloudflare)
+   */
+  @Get()
+  getRoot(@Res() res: Response) {
+    return res.status(HttpStatus.OK).json({
+      name: 'QueueLess India API',
+      status: 'ok',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * HEAD /
+   * Root HEAD ping for cloud availability checks
+   */
+  @Head()
+  headRoot(@Res() res: Response) {
+    return res.status(HttpStatus.OK).end();
+  }
 
   /**
    * GET /healthz
