@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/realtime/socket_service.dart';
 import '../../../core/realtime/realtime_notifier.dart';
+import '../../../core/services/calling_alert_service.dart';
 import '../../auth/providers/auth_notifier.dart';
 import '../models/branch_model.dart';
 import '../models/queue_token_model.dart';
@@ -61,6 +62,11 @@ class CustomerQueueNotifier extends StateNotifier<CustomerQueueState> {
             status: CustomerTokenStatus.called,
             calledCounterLabel: data['counter_label'] as String?,
           ),
+        );
+        // Trigger high-priority calling alert, chime and bilingual TTS
+        CallingAlertService().triggerCallingAlarm(
+          tokenNumber: state.activeToken!.number,
+          counterName: data['counter_label']?.toString() ?? '1',
         );
       }
     });
