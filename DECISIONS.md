@@ -269,7 +269,17 @@ All foundational architectural decisions are logged here with context, alternati
   - Enforce zero cleartext HTTP traffic via `network_security_config.xml`.
   - Provide automated Reviewer Demo Bypass (`9000000001` / OTP `123456`) auto-advancing through the full queue cycle in < 60 seconds with bilingual TTS (Hindi first, English second).
   - Implement and test DPDP Section 12 Right to Erasure endpoint (`POST /api/v1/privacy/delete-account`) to completely wipe user PII, anonymize historical tokens, and purge active sessions.
+---
+
+## ADR-018: Production Docker Build & NestJS TypeScript RootDir Normalization
+
+- **Status:** Accepted (Deployment)
+- **Context:**
+  When deploying the backend container to Render, the Docker container exited with `Error: Cannot find module '/app/dist/main.js' (MODULE_NOT_FOUND)`. TypeScript was including `prisma/seed.ts` along with `src/`, causing `tsc` to preserve the directory structure under `dist/src/` rather than emitting `dist/main.js` at root.
+- **Decision:**
+  - Add explicit `"include": ["src/**/*"]` and `"exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "prisma"]` to `backend/tsconfig.json` so NestJS compiles cleanly into `dist/`.
+  - Add a defensive fallback in `backend/Dockerfile` runner stage (`if [ -f "dist/src/main.js" ] && [ ! -f "dist/main.js" ]; then cp -r dist/src/* dist/; fi`) guaranteeing `dist/main.js` is present in any compilation mode.
 - **Trade-offs:**
-  - Achieves optimal bundle size (~11.8 MB) and instant Play Store reviewer pass rate.
-  - Requires maintaining explicit R8 keep rules for Flutter reflection and encrypted Hive storage.
+  - Zero runtime startup failures across different CI/CD and deployment targets.
+  - Keeps seed script execution isolated via `ts-node`.
 
