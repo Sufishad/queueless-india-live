@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Enforce HTTPS only across all domains (Zero cleartext traffic) -->
-    <base-config cleartextTrafficPermitted="false">
+    <!-- Base config: permits cleartext traffic for local testing / LAN -->
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
+            <certificates src="user" />
         </trust-anchors>
     </base-config>
     

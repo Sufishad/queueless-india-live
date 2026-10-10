@@ -45,7 +45,12 @@ class SocketService {
   Stream<Map<String, dynamic>> get queueResumedStream =>
       _queueResumedController.stream;
 
-  SocketService({this.serverUrl = 'http://10.0.2.2:3000'});
+  SocketService({
+    this.serverUrl = const String.fromEnvironment(
+      'SOCKET_SERVER_URL',
+      defaultValue: 'http://10.99.103.32:3000',
+    ),
+  });
 
   void connect() {
     if (_socket != null && _socket!.connected) return;

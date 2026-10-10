@@ -9,7 +9,10 @@ class DioClient {
 
   DioClient({
     SecureStorageService? storageService,
-    this.baseUrl = 'http://10.0.2.2:3000/api/v1', // Android emulator default localhost
+    this.baseUrl = const String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'http://10.99.103.32:3000/api/v1',
+    ),
   }) : storageService = storageService ?? SecureStorageService() {
     dio = Dio(
       BaseOptions(

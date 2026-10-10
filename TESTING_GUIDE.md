@@ -142,11 +142,14 @@ flutter run
 | **Android Permissions** | All runtime permissions promptable | Manifest + ProGuard stripped |
 
 ### Important Local Testing Notes:
-1. **Android Emulator Localhost:**
-   - If running the backend locally on your computer (`localhost:3000`), the Android Emulator cannot reach it via `http://localhost:3000`.
-   - Use `http://10.0.2.2:3000` (the emulator's bridge to host loopback).
-2. **Physical Device on Wi-Fi:**
-   - Ensure phone and dev PC are on the same Wi-Fi network.
-   - Point `API_BASE_URL` to your machine's LAN IP (e.g., `http://192.168.1.15:3000`).
+1. **Local Wi-Fi Testing (Current Default):**
+   - The app is currently configured to connect to your laptop at **`http://10.99.103.32:3000`** (`API_BASE_URL`: `http://10.99.103.32:3000/api/v1`).
+   - Ensure your phone and development PC are connected to the same Wi-Fi network.
+   - Start the backend on your laptop: `cd backend && npm run start:dev` (listens on `0.0.0.0:3000`).
+2. **Android Emulator Localhost:**
+   - If testing on an Android Emulator instead of a physical phone over Wi-Fi, you can override with:
+     ```bash
+     flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000/api/v1 --dart-define=SOCKET_SERVER_URL=http://10.0.2.2:3000
+     ```
 3. **OEM Battery Optimization:**
    - On Xiaomi (MIUI), OnePlus (OxygenOS), and Samsung (OneUI), grant **"Autostart"** and set Battery Saver to **"No restrictions"** for uninterrupted background socket operation.

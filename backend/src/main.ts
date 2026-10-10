@@ -26,23 +26,24 @@ async function bootstrap() {
     }),
   );
 
-  // Milestone 3: CORS whitelist (admin web domain + local dev)
-  const allowedOrigins = [
-    process.env.ADMIN_WEB_ORIGIN || 'http://localhost:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-    'https://admin.queueless.in',
-  ];
-
+  // Milestone 3: CORS configuration (allows all origins for local development)
+  const isDev = process.env.NODE_ENV !== 'production';
   app.enableCors({
-    origin: (origin, callback) => {
-      // Mobile apps don't pass Origin; allow non-origin and whitelisted domains
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-        callback(null, true);
-      } else {
-        callback(new Error('Blocked by CORS policy'));
-      }
-    },
+    origin: isDev
+      ? true
+      : (origin, callback) => {
+          const allowedOrigins = [
+            process.env.ADMIN_WEB_ORIGIN || 'http://localhost:5173',
+            'http://localhost:3000',
+            'http://127.0.0.1:5173',
+            'https://admin.queueless.in',
+          ];
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error('Blocked by CORS policy'));
+          }
+        },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'x-api-key'],
@@ -65,8 +66,8 @@ async function bootstrap() {
   app.useGlobalFilters(new SentryExceptionFilter());
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`[QueueLess India] Backend core initialized on port ${port}`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`[QueueLess India] Backend core initialized on 0.0.0.0:${port}`);
 }
 
 bootstrap();
