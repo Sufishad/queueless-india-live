@@ -51,7 +51,7 @@ async function bootstrap() {
 
   // Global prefix with health/readiness/metrics roots for Prometheus/Docker probes
   app.setGlobalPrefix('api/v1', {
-    exclude: ['healthz', 'readyz', 'metrics'],
+    exclude: ['/', '', 'healthz', 'readyz', 'metrics'],
   });
 
   const metricsService = app.get(MetricsService);

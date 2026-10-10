@@ -16,6 +16,7 @@ COPY tsconfig*.json ./
 COPY src ./src/
 
 RUN npm run build
+RUN npx tsc prisma/seed.ts --outDir dist/prisma --skipLibCheck --module commonjs --target es2020 --moduleResolution node --esModuleInterop
 
 # Remove development dependencies, retaining production packages and generated Prisma client
 RUN npm prune --production
@@ -44,4 +45,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000/healthz || exit 1
 
-CMD ["node", "dist/main.js"]
+# Apply database schema and seed pilot data on startup before running server
+CMD ["sh", "-c", "npx prisma db push --skip-generate && (node dist/prisma/seed.js || true) && node dist/main.js"]
