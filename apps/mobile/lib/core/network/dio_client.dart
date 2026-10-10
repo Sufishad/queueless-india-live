@@ -11,7 +11,7 @@ class DioClient {
     SecureStorageService? storageService,
     this.baseUrl = const String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'http://10.99.103.32:3000/api/v1',
+      defaultValue: 'https://queueless-india-live.onrender.com/api/v1',
     ),
   }) : storageService = storageService ?? SecureStorageService() {
     dio = Dio(

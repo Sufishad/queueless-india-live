@@ -48,7 +48,7 @@ class SocketService {
   SocketService({
     this.serverUrl = const String.fromEnvironment(
       'SOCKET_SERVER_URL',
-      defaultValue: 'http://10.99.103.32:3000',
+      defaultValue: 'https://queueless-india-live.onrender.com',
     ),
   });
 

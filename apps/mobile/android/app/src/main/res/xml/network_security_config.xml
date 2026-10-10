@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Base config: permits cleartext traffic for local testing / LAN -->
-    <base-config cleartextTrafficPermitted="true">
+    <!-- Base config: disables cleartext traffic for production HTTPS -->
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />
