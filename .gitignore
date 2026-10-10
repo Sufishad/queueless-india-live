@@ -1,4 +1,6 @@
 # Hermes Agent Profile Internals
+source-checks/
+state/
 lsp/
 logs/
 runtime/
