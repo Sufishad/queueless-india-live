@@ -35,6 +35,9 @@ COPY prisma ./prisma/
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
+# Guarantee dist/main.js exists even if outputted to dist/src/main.js
+RUN if [ -f "dist/src/main.js" ] && [ ! -f "dist/main.js" ]; then cp -r dist/src/* dist/; fi
+
 EXPOSE 3000
 
 # Docker healthcheck pinging root /healthz endpoint
